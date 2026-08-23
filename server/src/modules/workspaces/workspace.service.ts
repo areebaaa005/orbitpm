@@ -1,0 +1,148 @@
+import crypto from 'crypto';
+import { Workspace } from './workspace.model';
+import { Membership, WorkspaceRole } from './membership.model';
+import { Invitation } from './invitation.model';
+import { User } from '../users/user.model';
+import { ApiError } from '../../utils/ApiError';
+
+function slugify(name: string): string {
+  const base = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  const suffix = crypto.randomBytes(3).toString('hex');
+  return `${base || 'workspace'}-${suffix}`;
+}
+
+export async function createWorkspace(userId: string, name: string) {
+  const workspace = await Workspace.create({
+    name,
+    slug: slugify(name),
+    ownerId: userId,
+  });
+
+  await Membership.create({
+    workspaceId: workspace._id,
+    userId,
+    role: 'owner',
+  });
+
+  return workspace;
+}
+
+export async function listUserWorkspaces(userId: string) {
+  const memberships = await Membership.find({ userId }).populate('workspaceId');
+  return memberships.map((m) => ({
+    workspace: m.workspaceId,
+    role: m.role,
+  }));
+}
+
+export async function listMembers(workspaceId: string) {
+  const memberships = await Membership.find({ workspaceId }).populate(
+    'userId',
+    'name email avatar'
+  );
+  return memberships.map((m) => ({
+    userId: m.userId,
+    role: m.role,
+    joinedAt: m.joinedAt,
+  }));
+}
+
+export async function createInvitation(
+  workspaceId: string,
+  invitedBy: string,
+  email: string,
+  role: WorkspaceRole
+) {
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    const existingMembership = await Membership.findOne({
+      workspaceId,
+      userId: existingUser._id,
+    });
+    if (existingMembership) {
+      throw ApiError.conflict('This user is already a member of the workspace');
+    }
+  }
+
+  const token = crypto.randomBytes(24).toString('hex');
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const invitation = await Invitation.create({
+    workspaceId,
+    email,
+    role,
+    token,
+    invitedBy,
+    expiresAt,
+  });
+
+  // In a production build this token would be emailed. For now it is
+  // returned directly so the flow is testable without an email provider.
+  return invitation;
+}
+
+export async function acceptInvitation(userId: string, token: string) {
+  const invitation = await Invitation.findOne({ token });
+  if (!invitation || invitation.acceptedAt || invitation.expiresAt < new Date()) {
+    throw ApiError.badRequest('INVALID_INVITATION', 'This invitation is invalid or has expired');
+  }
+
+  const user = await User.findById(userId);
+  if (!user || user.email !== invitation.email) {
+    throw ApiError.forbidden('This invitation was issued to a different email address');
+  }
+
+  const existing = await Membership.findOne({ workspaceId: invitation.workspaceId, userId });
+  if (existing) {
+    throw ApiError.conflict('You are already a member of this workspace');
+  }
+
+  // Role comes from the stored invitation record, never from client input —
+  // this is what stops a user from granting themselves elevated access.
+  await Membership.create({
+    workspaceId: invitation.workspaceId,
+    userId,
+    role: invitation.role,
+  });
+
+  invitation.acceptedAt = new Date();
+  await invitation.save();
+
+  return invitation.workspaceId;
+}
+
+export async function updateMemberRole(
+  workspaceId: string,
+  targetUserId: string,
+  newRole: WorkspaceRole,
+  actingRole: WorkspaceRole
+) {
+  const target = await Membership.findOne({ workspaceId, userId: targetUserId });
+  if (!target) {
+    throw ApiError.notFound('This user is not a member of the workspace');
+  }
+  if (target.role === 'owner') {
+    throw ApiError.forbidden('The workspace owner role cannot be changed here');
+  }
+  if (newRole === 'owner') {
+    throw ApiError.forbidden('Ownership must be transferred explicitly, not set via role update');
+  }
+  target.role = newRole;
+  await target.save();
+  return target;
+}
+
+export async function removeMember(workspaceId: string, targetUserId: string) {
+  const target = await Membership.findOne({ workspaceId, userId: targetUserId });
+  if (!target) {
+    throw ApiError.notFound('This user is not a member of the workspace');
+  }
+  if (target.role === 'owner') {
+    throw ApiError.forbidden('The workspace owner cannot be removed');
+  }
+  await target.deleteOne();
+}

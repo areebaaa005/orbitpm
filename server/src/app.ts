@@ -7,6 +7,9 @@ import morgan from 'morgan';
 import { env } from './config/env';
 import { notFoundHandler, errorHandler } from './middleware/errorHandler';
 import authRoutes from './modules/auth/auth.routes';
+import workspaceRoutes from './modules/workspaces/workspace.routes';
+import { workspaceProjectRouter, projectRouter } from './modules/projects/project.routes';
+import { projectTaskRouter, taskRouter } from './modules/tasks/task.routes';
 
 export function createApp(): Application {
   const app = express();
@@ -28,6 +31,13 @@ export function createApp(): Application {
   });
 
   app.use('/api/v1/auth', authRoutes);
+  app.use('/api/v1/workspaces', workspaceRoutes);
+  // Nested under workspaces: /api/v1/workspaces/:workspaceId/projects
+  app.use('/api/v1/workspaces/:workspaceId/projects', workspaceProjectRouter);
+  // Flat project/task routes that resolve their own workspace context
+  app.use('/api/v1/projects', projectRouter);
+  app.use('/api/v1/projects/:projectId/tasks', projectTaskRouter);
+  app.use('/api/v1/tasks', taskRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
