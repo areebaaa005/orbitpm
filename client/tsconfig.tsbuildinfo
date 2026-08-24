@@ -1,1 +1,0 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/types.ts","./src/api/client.ts","./src/components/AppLayout.tsx","./src/components/OrbitMark.tsx","./src/components/ProtectedRoute.tsx","./src/context/AuthContext.tsx","./src/hooks/useWorkspaceData.ts","./src/pages/Board.tsx","./src/pages/Dashboard.tsx","./src/pages/Login.tsx","./src/pages/Register.tsx"],"version":"5.9.3"}
