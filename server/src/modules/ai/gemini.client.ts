@@ -1,7 +1,7 @@
 import { env } from '../../config/env';
 import { ApiError } from '../../utils/ApiError';
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-3.6-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_INPUT_CHARS = 6000; // keep prompts small — cheaper, faster, less to leak
