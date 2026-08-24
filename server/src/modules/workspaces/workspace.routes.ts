@@ -24,6 +24,12 @@ router.post(
 );
 
 router.get(
+  '/:workspaceId/me',
+  requireWorkspaceMember(),
+  workspaceController.getMyMembership
+);
+
+router.get(
   '/:workspaceId/members',
   requireWorkspaceMember(),
   workspaceController.listMembers

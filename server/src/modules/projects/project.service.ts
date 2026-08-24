@@ -5,7 +5,7 @@ import { ApiError } from '../../utils/ApiError';
 export async function createProject(
   workspaceId: string,
   userId: string,
-  data: { name: string; key: string; description?: string }
+  data: { name: string; key: string; description?: string; color?: string }
 ) {
   const existing = await Project.findOne({ workspaceId, key: data.key.toUpperCase() });
   if (existing) {
@@ -17,6 +17,7 @@ export async function createProject(
     name: data.name,
     key: data.key.toUpperCase(),
     description: data.description,
+    color: data.color,
     members: [userId],
     createdBy: userId,
   });
@@ -47,7 +48,7 @@ export async function getProject(projectId: string) {
 
 export async function updateProject(
   projectId: string,
-  updates: { name?: string; description?: string; status?: 'active' | 'archived' }
+  updates: { name?: string; description?: string; status?: 'active' | 'archived'; color?: string }
 ) {
   const project = await Project.findByIdAndUpdate(projectId, updates, { new: true });
   if (!project) {

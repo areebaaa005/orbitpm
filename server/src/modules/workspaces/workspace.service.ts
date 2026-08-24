@@ -115,6 +115,12 @@ export async function acceptInvitation(userId: string, token: string) {
   return invitation.workspaceId;
 }
 
+export async function getMyMembership(workspaceId: string, userId: string) {
+  const membership = await Membership.findOne({ workspaceId, userId });
+  if (!membership) throw ApiError.forbidden('You are not a member of this workspace');
+  return membership;
+}
+
 export async function updateWorkspace(workspaceId: string, updates: { name?: string }) {
   const workspace = await Workspace.findByIdAndUpdate(workspaceId, updates, { new: true });
   if (!workspace) {
