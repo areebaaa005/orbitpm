@@ -56,6 +56,30 @@ export interface Task {
   createdAt: string;
 }
 
+export interface Comment {
+  _id: string;
+  taskId: string;
+  authorId: { _id: string; name: string; avatar: string | null } | string;
+  body: string;
+  createdAt: string;
+}
+
+export interface Activity {
+  _id: string;
+  action: string;
+  actorId: { _id: string; name: string; avatar: string | null } | string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface AppNotification {
+  _id: string;
+  type: string;
+  message: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
 export interface ApiSuccess<T> {
   success: true;
   data: T;

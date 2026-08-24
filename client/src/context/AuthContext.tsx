@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api, setAccessToken, refreshAccessToken } from '../api/client';
+import { connectSocket, disconnectSocket } from '../api/socket';
 import { User } from '../types';
 
 interface AuthContextValue {
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const res = await api.get('/auth/me');
           setUser(res.data.data.user);
+          connectSocket();
         } catch {
           setAccessToken(null);
         }
@@ -36,18 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await api.post('/auth/login', { email, password });
     setAccessToken(res.data.data.accessToken);
     setUser(res.data.data.user);
+    connectSocket();
   }
 
   async function register(name: string, email: string, password: string) {
     const res = await api.post('/auth/register', { name, email, password });
     setAccessToken(res.data.data.accessToken);
     setUser(res.data.data.user);
+    connectSocket();
   }
 
   async function logout() {
     await api.post('/auth/logout');
     setAccessToken(null);
     setUser(null);
+    disconnectSocket();
   }
 
   return (

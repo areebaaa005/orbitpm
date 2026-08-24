@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { OrbitMark } from './OrbitMark';
+import { NotificationBell } from './NotificationBell';
 import { useAuth } from '../context/AuthContext';
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -15,10 +16,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <aside className="flex w-60 flex-shrink-0 flex-col bg-space-950 text-space-100">
-        <Link to="/" className="flex items-center gap-2 px-5 py-5">
-          <OrbitMark size={26} />
-          <span className="font-display text-lg font-semibold text-white">OrbitPM</span>
-        </Link>
+        <div className="flex items-center justify-between px-5 py-5">
+          <Link to="/" className="flex items-center gap-2">
+            <OrbitMark size={26} />
+            <span className="font-display text-lg font-semibold text-white">OrbitPM</span>
+          </Link>
+        </div>
 
         <nav className="flex-1 px-3 py-2">
           <Link
@@ -48,7 +51,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="flex-1 overflow-y-auto">
+        <div className="flex justify-end border-b border-gray-200 bg-white px-6 py-2.5">
+          <NotificationBell />
+        </div>
+        {children}
+      </main>
     </div>
   );
 }

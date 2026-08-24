@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { WorkspaceMembership, Project, Column, Task } from '../types';
+import { WorkspaceMembership, Project, Column, Task, Comment, Activity, AppNotification } from '../types';
 
 // ---------- Workspaces ----------
 
@@ -99,6 +99,87 @@ export function useCreateTask(projectId: string | undefined) {
       return res.data.data.task as Task;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks', projectId] }),
+  });
+}
+
+export function useUpdateTask(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ taskId, ...updates }: { taskId: string } & Partial<Task>) => {
+      const res = await api.patch(`/tasks/${taskId}`, updates);
+      return res.data.data.task as Task;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks', projectId] }),
+  });
+}
+
+// ---------- Comments ----------
+
+export function useComments(taskId: string | undefined) {
+  return useQuery({
+    queryKey: ['comments', taskId],
+    queryFn: async () => {
+      const res = await api.get(`/tasks/${taskId}/comments`);
+      return res.data.data.comments as Comment[];
+    },
+    enabled: !!taskId,
+  });
+}
+
+export function useCreateComment(taskId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: string) => {
+      const res = await api.post(`/tasks/${taskId}/comments`, { body });
+      return res.data.data.comment as Comment;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', taskId] }),
+  });
+}
+
+// ---------- Activity ----------
+
+export function useTaskActivity(taskId: string | undefined) {
+  return useQuery({
+    queryKey: ['activity', taskId],
+    queryFn: async () => {
+      const res = await api.get(`/tasks/${taskId}/activity`);
+      return res.data.data.activities as Activity[];
+    },
+    enabled: !!taskId,
+  });
+}
+
+// ---------- Notifications ----------
+
+export function useNotifications() {
+  return useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await api.get('/notifications');
+      return res.data.data.notifications as AppNotification[];
+    },
+    refetchInterval: 30000,
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.patch(`/notifications/${id}/read`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      await api.patch('/notifications/read-all');
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 }
 
