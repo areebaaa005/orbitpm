@@ -12,6 +12,8 @@ import { workspaceProjectRouter, projectRouter } from './modules/projects/projec
 import { projectTaskRouter, taskRouter } from './modules/tasks/task.routes';
 import notificationRoutes from './modules/notifications/notification.routes';
 import { projectActivityRouter } from './modules/activities/activity.routes';
+import { projectAnalyticsRouter, workspaceAnalyticsRouter } from './modules/analytics/analytics.routes';
+import { projectAiRouter } from './modules/ai/ai.routes';
 
 export function createApp(): Application {
   const app = express();
@@ -42,6 +44,9 @@ export function createApp(): Application {
   app.use('/api/v1/tasks', taskRouter);
   app.use('/api/v1/notifications', notificationRoutes);
   app.use('/api/v1/projects/:projectId/activity', projectActivityRouter);
+  app.use('/api/v1/projects/:projectId/analytics', projectAnalyticsRouter);
+  app.use('/api/v1/workspaces/:workspaceId/analytics', workspaceAnalyticsRouter);
+  app.use('/api/v1/projects/:projectId/ai', projectAiRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

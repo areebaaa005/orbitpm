@@ -8,6 +8,7 @@ import { createTaskSchema, updateTaskSchema, moveTaskSchema } from './task.valid
 import * as taskController from './task.controller';
 import commentRoutes from '../comments/comment.routes';
 import { taskActivityRouter } from '../activities/activity.routes';
+import { taskAiRouter } from '../ai/ai.routes';
 
 // Project-scoped: /projects/:projectId/tasks
 export const projectTaskRouter = Router({ mergeParams: true });
@@ -49,3 +50,4 @@ taskRouter.patch(
 );
 taskRouter.use('/:taskId/comments', commentRoutes);
 taskRouter.use('/:taskId/activity', taskActivityRouter);
+taskRouter.use('/:taskId/ai', taskAiRouter);
