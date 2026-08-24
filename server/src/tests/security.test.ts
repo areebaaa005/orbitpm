@@ -4,13 +4,21 @@ import { createApp } from '../app';
 
 const app = createApp();
 
-async function registerAndLogin(email: string) {
+const runId = Date.now();
+
+async function registerAndLogin(emailPrefix: string) {
   const res = await request(app).post('/api/v1/auth/register').send({
     name: 'Security Test',
-    email,
+    email: `${emailPrefix}-${runId}@orbitpm.dev`,
     password: 'ValidPass123',
   });
-  return res.body.data.accessToken as string;
+  if (!res.body?.data?.accessToken) {
+    throw new Error(`Registration failed: ${JSON.stringify(res.body)}`);
+  }
+  return {
+    token: res.body.data.accessToken as string,
+    email: `${emailPrefix}-${runId}@orbitpm.dev`,
+  };
 }
 
 describe('Security: cross-workspace isolation', () => {
@@ -20,8 +28,10 @@ describe('Security: cross-workspace isolation', () => {
   let projectAId: string;
 
   beforeAll(async () => {
-    tokenA = await registerAndLogin('security-user-a@orbitpm.dev');
-    tokenB = await registerAndLogin('security-user-b@orbitpm.dev');
+    const a = await registerAndLogin('security-user-a');
+    const b = await registerAndLogin('security-user-b');
+    tokenA = a.token;
+    tokenB = b.token;
 
     const wsRes = await request(app)
       .post('/api/v1/workspaces')
@@ -80,8 +90,10 @@ describe('Security: role-based permission enforcement', () => {
   let workspaceId: string;
 
   beforeAll(async () => {
-    ownerToken = await registerAndLogin('rbac-owner@orbitpm.dev');
-    viewerToken = await registerAndLogin('rbac-viewer@orbitpm.dev');
+    const owner = await registerAndLogin('rbac-owner');
+    const viewer = await registerAndLogin('rbac-viewer');
+    ownerToken = owner.token;
+    viewerToken = viewer.token;
 
     const wsRes = await request(app)
       .post('/api/v1/workspaces')
@@ -92,7 +104,7 @@ describe('Security: role-based permission enforcement', () => {
     const inviteRes = await request(app)
       .post(`/api/v1/workspaces/${workspaceId}/invitations`)
       .set('Authorization', `Bearer ${ownerToken}`)
-      .send({ email: 'rbac-viewer@orbitpm.dev', role: 'viewer' });
+      .send({ email: viewer.email, role: 'viewer' });
 
     await request(app)
       .post('/api/v1/workspaces/invitations/accept')
