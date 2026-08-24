@@ -4,6 +4,8 @@ import {
   useCreateComment,
   useTaskActivity,
   useUpdateTask,
+  useSuggestSubtasks,
+  useCreateTask,
 } from '../hooks/useWorkspaceData';
 import { Task, TaskPriority } from '../types';
 
@@ -30,10 +32,25 @@ export function TaskDetailModal({
   const { data: activities } = useTaskActivity(task._id);
   const createComment = useCreateComment(task._id);
   const updateTask = useUpdateTask(projectId);
+  const suggestSubtasks = useSuggestSubtasks();
+  const createTask = useCreateTask(projectId);
 
   const [description, setDescription] = useState(task.description || '');
   const [commentText, setCommentText] = useState('');
   const [tab, setTab] = useState<'comments' | 'activity'>('comments');
+  const [subtaskSuggestions, setSubtaskSuggestions] = useState<string[]>([]);
+  const [addedSubtasks, setAddedSubtasks] = useState<Set<string>>(new Set());
+
+  async function handleSuggestSubtasks() {
+    const suggestions = await suggestSubtasks.mutateAsync(task._id);
+    setSubtaskSuggestions(suggestions);
+    setAddedSubtasks(new Set());
+  }
+
+  async function handleAddSubtask(title: string) {
+    await createTask.mutateAsync({ columnId: task.columnId, title });
+    setAddedSubtasks((prev) => new Set(prev).add(title));
+  }
 
   async function handleSubmitComment(e: FormEvent) {
     e.preventDefault();
@@ -106,6 +123,44 @@ export function TaskDetailModal({
               onChange={(e) => setDescription(e.target.value)}
               onBlur={handleDescriptionBlur}
             />
+          </div>
+
+          <div className="mt-4">
+            <button
+              onClick={handleSuggestSubtasks}
+              disabled={suggestSubtasks.isPending}
+              className="btn-secondary text-xs"
+            >
+              {suggestSubtasks.isPending ? 'Thinking…' : '✨ Suggest subtasks with AI'}
+            </button>
+
+            {suggestSubtasks.isError && (
+              <p className="mt-2 text-xs text-red-600">
+                Couldn't generate suggestions right now. Try again in a moment.
+              </p>
+            )}
+
+            {subtaskSuggestions.length > 0 && (
+              <div className="mt-3 flex flex-col gap-1.5 rounded-lg border border-orbit-100 bg-orbit-50 p-3">
+                {subtaskSuggestions.map((s) => {
+                  const added = addedSubtasks.has(s);
+                  return (
+                    <div key={s} className="flex items-center justify-between gap-2">
+                      <span className={`text-sm ${added ? 'text-ink-400 line-through' : 'text-ink-900'}`}>
+                        {s}
+                      </span>
+                      <button
+                        onClick={() => !added && handleAddSubtask(s)}
+                        disabled={added}
+                        className="flex-shrink-0 text-xs font-medium text-orbit-600 hover:text-orbit-700 disabled:text-ink-400"
+                      >
+                        {added ? 'Added' : '+ Add as task'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="mt-6 flex gap-4 border-b border-gray-200">

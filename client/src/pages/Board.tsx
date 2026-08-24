@@ -27,6 +27,7 @@ import {
   useTasks,
   useCreateTask,
   useMoveTask,
+  useProjectSummary,
 } from '../hooks/useWorkspaceData';
 import { getSocket } from '../api/socket';
 import { Task, TaskPriority, Column } from '../types';
@@ -44,10 +45,12 @@ export default function Board() {
   const { data: columns, isLoading: columnsLoading } = useColumns(projectId);
   const { data: tasks } = useTasks(projectId);
   const moveTask = useMoveTask(projectId);
+  const projectSummary = useProjectSummary();
   const qc = useQueryClient();
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [openTask, setOpenTask] = useState<Task | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -130,8 +133,52 @@ export default function Board() {
           <span className="rounded bg-space-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-space-700">
             {project?.key}
           </span>
-          <h1 className="text-lg font-semibold text-ink-900">{project?.name}</h1>
+          <h1 className="flex-1 text-lg font-semibold text-ink-900">{project?.name}</h1>
+          <button
+            onClick={() => {
+              setShowSummary(true);
+              if (projectId) projectSummary.mutate(projectId);
+            }}
+            className="btn-secondary text-xs"
+          >
+            ✨ AI summary
+          </button>
+          <Link to={`/projects/${projectId}/analytics`} className="btn-secondary text-xs">
+            Analytics
+          </Link>
         </header>
+
+        {showSummary && (
+          <div className="border-b border-gray-200 bg-orbit-50 px-8 py-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orbit-700">
+                  AI project summary
+                </p>
+                {projectSummary.isPending && (
+                  <p className="text-sm text-ink-600">Generating summary…</p>
+                )}
+                {projectSummary.isError && (
+                  <p className="text-sm text-red-600">
+                    Couldn't generate a summary right now. Try again in a moment.
+                  </p>
+                )}
+                {projectSummary.data && (
+                  <p className="whitespace-pre-line text-sm text-ink-900">
+                    {projectSummary.data}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => setShowSummary(false)}
+                className="text-ink-400 hover:text-ink-600"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex-1 overflow-x-auto px-8 py-6">
           {columnsLoading && <p className="text-sm text-ink-400">Loading board…</p>}

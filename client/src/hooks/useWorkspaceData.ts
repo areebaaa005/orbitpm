@@ -183,6 +183,49 @@ export function useMarkAllNotificationsRead() {
   });
 }
 
+// ---------- Analytics ----------
+
+export interface ProjectAnalytics {
+  total: number;
+  completed: number;
+  open: number;
+  overdue: number;
+  priorityDistribution: Record<string, number>;
+  workload: { userId: string; count: number }[];
+  completionTrend: { date: string; count: number }[];
+}
+
+export function useProjectAnalytics(projectId: string | undefined) {
+  return useQuery({
+    queryKey: ['analytics', projectId],
+    queryFn: async () => {
+      const res = await api.get(`/projects/${projectId}/analytics`);
+      return res.data.data as ProjectAnalytics;
+    },
+    enabled: !!projectId,
+  });
+}
+
+// ---------- AI ----------
+
+export function useSuggestSubtasks() {
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const res = await api.post(`/tasks/${taskId}/ai/breakdown`);
+      return res.data.data.subtasks as string[];
+    },
+  });
+}
+
+export function useProjectSummary() {
+  return useMutation({
+    mutationFn: async (projectId: string) => {
+      const res = await api.post(`/projects/${projectId}/ai/summary`);
+      return res.data.data.summary as string;
+    },
+  });
+}
+
 export function useMoveTask(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({

@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Board from './pages/Board';
+import Analytics from './pages/Analytics';
 
 export default function App() {
   return (
@@ -25,6 +26,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Board />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects/:projectId/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
             </ProtectedRoute>
           }
         />
