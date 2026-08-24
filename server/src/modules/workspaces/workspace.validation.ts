@@ -6,6 +6,12 @@ export const createWorkspaceSchema = z.object({
   }),
 });
 
+export const updateWorkspaceSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(2).max(100),
+  }),
+});
+
 export const inviteMemberSchema = z.object({
   body: z.object({
     email: z.string().trim().email(),

@@ -115,6 +115,14 @@ export async function acceptInvitation(userId: string, token: string) {
   return invitation.workspaceId;
 }
 
+export async function updateWorkspace(workspaceId: string, updates: { name?: string }) {
+  const workspace = await Workspace.findByIdAndUpdate(workspaceId, updates, { new: true });
+  if (!workspace) {
+    throw ApiError.notFound('Workspace not found');
+  }
+  return workspace;
+}
+
 export async function updateMemberRole(
   workspaceId: string,
   targetUserId: string,

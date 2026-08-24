@@ -7,6 +7,11 @@ export const createWorkspace = catchAsync(async (req: Request, res: Response) =>
   res.status(201).json({ success: true, data: { workspace } });
 });
 
+export const updateWorkspace = catchAsync(async (req: Request, res: Response) => {
+  const workspace = await workspaceService.updateWorkspace(req.params.workspaceId, req.body);
+  res.status(200).json({ success: true, data: { workspace } });
+});
+
 export const listWorkspaces = catchAsync(async (req: Request, res: Response) => {
   const workspaces = await workspaceService.listUserWorkspaces(req.userId!);
   res.status(200).json({ success: true, data: { workspaces } });

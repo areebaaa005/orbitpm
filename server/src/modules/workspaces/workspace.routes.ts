@@ -4,6 +4,7 @@ import { requireWorkspaceMember, requireMinRole } from '../../middleware/rbac';
 import { validate } from '../../middleware/validate';
 import {
   createWorkspaceSchema,
+  updateWorkspaceSchema,
   inviteMemberSchema,
   acceptInvitationSchema,
   updateMemberRoleSchema,
@@ -26,6 +27,14 @@ router.get(
   '/:workspaceId/members',
   requireWorkspaceMember(),
   workspaceController.listMembers
+);
+
+router.patch(
+  '/:workspaceId',
+  requireWorkspaceMember(),
+  requireMinRole('admin'),
+  validate(updateWorkspaceSchema),
+  workspaceController.updateWorkspace
 );
 
 router.post(
