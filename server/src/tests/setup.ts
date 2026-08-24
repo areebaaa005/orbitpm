@@ -21,6 +21,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await mongoose.connection.dropDatabase();
+  // dropDatabase() needs a dbAdmin role that Atlas free-tier users don't
+  // have. Clearing each collection only needs readWrite, which we do have.
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    await collections[key].deleteMany({});
+  }
   await mongoose.disconnect();
 });
