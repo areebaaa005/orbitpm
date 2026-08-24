@@ -10,6 +10,8 @@ import authRoutes from './modules/auth/auth.routes';
 import workspaceRoutes from './modules/workspaces/workspace.routes';
 import { workspaceProjectRouter, projectRouter } from './modules/projects/project.routes';
 import { projectTaskRouter, taskRouter } from './modules/tasks/task.routes';
+import notificationRoutes from './modules/notifications/notification.routes';
+import { projectActivityRouter } from './modules/activities/activity.routes';
 
 export function createApp(): Application {
   const app = express();
@@ -38,6 +40,8 @@ export function createApp(): Application {
   app.use('/api/v1/projects', projectRouter);
   app.use('/api/v1/projects/:projectId/tasks', projectTaskRouter);
   app.use('/api/v1/tasks', taskRouter);
+  app.use('/api/v1/notifications', notificationRoutes);
+  app.use('/api/v1/projects/:projectId/activity', projectActivityRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -1,5 +1,8 @@
 import { Task } from './task.model';
 import { ApiError } from '../../utils/ApiError';
+import { logActivity } from '../activities/activity.service';
+import { createNotification } from '../notifications/notification.service';
+import { emitToProject } from '../../config/socket';
 
 interface CreateTaskInput {
   columnId: string;
@@ -31,6 +34,30 @@ export async function createTask(
     dueDate: input.dueDate,
     order: count,
   });
+
+  await logActivity({
+    workspaceId,
+    projectId,
+    taskId: task._id.toString(),
+    actorId: reporterId,
+    action: 'task_created',
+    metadata: { title: task.title },
+  });
+
+  emitToProject(projectId, 'task:created', task);
+
+  for (const assigneeId of input.assigneeIds || []) {
+    if (assigneeId === reporterId) continue;
+    await createNotification({
+      userId: assigneeId,
+      type: 'task_assigned',
+      workspaceId,
+      taskId: task._id.toString(),
+      actorId: reporterId,
+      message: `You were assigned to "${task.title}"`,
+    });
+  }
+
   return task;
 }
 
@@ -68,15 +95,27 @@ export async function getTask(taskId: string) {
   return task;
 }
 
-export async function updateTask(taskId: string, updates: Record<string, unknown>) {
+export async function updateTask(taskId: string, updates: Record<string, unknown>, actorId: string) {
   const task = await Task.findByIdAndUpdate(taskId, updates, { new: true });
   if (!task) throw ApiError.notFound('Task not found');
+
+  await logActivity({
+    workspaceId: task.workspaceId.toString(),
+    projectId: task.projectId.toString(),
+    taskId: task._id.toString(),
+    actorId,
+    action: 'task_updated',
+    metadata: { fields: Object.keys(updates) },
+  });
+
+  emitToProject(task.projectId.toString(), 'task:updated', task);
   return task;
 }
 
 export async function deleteTask(taskId: string) {
   const task = await Task.findByIdAndDelete(taskId);
   if (!task) throw ApiError.notFound('Task not found');
+  emitToProject(task.projectId.toString(), 'task:deleted', { taskId });
 }
 
 /**
@@ -84,7 +123,12 @@ export async function deleteTask(taskId: string) {
  * the order of sibling tasks so the sequence stays contiguous. This is the
  * server-side source of truth behind drag-and-drop persistence.
  */
-export async function moveTask(taskId: string, targetColumnId: string, targetOrder: number) {
+export async function moveTask(
+  taskId: string,
+  targetColumnId: string,
+  targetOrder: number,
+  actorId: string
+) {
   const task = await Task.findById(taskId);
   if (!task) throw ApiError.notFound('Task not found');
 
@@ -118,5 +162,15 @@ export async function moveTask(taskId: string, targetColumnId: string, targetOrd
   task.order = targetOrder;
   await task.save();
 
+  await logActivity({
+    workspaceId: task.workspaceId.toString(),
+    projectId: task.projectId.toString(),
+    taskId: task._id.toString(),
+    actorId,
+    action: 'task_moved',
+    metadata: { fromColumnId: sourceColumnId, toColumnId: targetColumnId },
+  });
+
+  emitToProject(task.projectId.toString(), 'task:moved', task);
   return task;
 }

@@ -6,6 +6,8 @@ import { loadTaskWorkspace } from '../../middleware/loadTaskWorkspace';
 import { validate } from '../../middleware/validate';
 import { createTaskSchema, updateTaskSchema, moveTaskSchema } from './task.validation';
 import * as taskController from './task.controller';
+import commentRoutes from '../comments/comment.routes';
+import { taskActivityRouter } from '../activities/activity.routes';
 
 // Project-scoped: /projects/:projectId/tasks
 export const projectTaskRouter = Router({ mergeParams: true });
@@ -45,3 +47,5 @@ taskRouter.patch(
   validate(moveTaskSchema),
   taskController.moveTask
 );
+taskRouter.use('/:taskId/comments', commentRoutes);
+taskRouter.use('/:taskId/activity', taskActivityRouter);

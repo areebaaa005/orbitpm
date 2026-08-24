@@ -31,7 +31,7 @@ export const getTask = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const updateTask = catchAsync(async (req: Request, res: Response) => {
-  const task = await taskService.updateTask(req.params.taskId, req.body);
+  const task = await taskService.updateTask(req.params.taskId, req.body, req.userId!);
   res.status(200).json({ success: true, data: { task } });
 });
 
@@ -41,6 +41,11 @@ export const deleteTask = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const moveTask = catchAsync(async (req: Request, res: Response) => {
-  const task = await taskService.moveTask(req.params.taskId, req.body.columnId, req.body.order);
+  const task = await taskService.moveTask(
+    req.params.taskId,
+    req.body.columnId,
+    req.body.order,
+    req.userId!
+  );
   res.status(200).json({ success: true, data: { task } });
 });
