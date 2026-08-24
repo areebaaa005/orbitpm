@@ -19,9 +19,12 @@ export async function generateContent(prompt: string): Promise<string> {
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const res = await fetch(`${GEMINI_URL}?key=${env.geminiApiKey}`, {
+    const res = await fetch(GEMINI_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': env.geminiApiKey,
+      },
       signal: controller.signal,
       body: JSON.stringify({
         contents: [{ parts: [{ text: trimmedPrompt }] }],
