@@ -4,6 +4,8 @@ import { Membership, WorkspaceRole } from './membership.model';
 import { Invitation } from './invitation.model';
 import { User } from '../users/user.model';
 import { ApiError } from '../../utils/ApiError';
+import { sendInvitationEmail } from '../../utils/email';
+import { env } from '../../config/env';
 
 function slugify(name: string): string {
   const base = name
@@ -80,9 +82,22 @@ export async function createInvitation(
     expiresAt,
   });
 
-  // In a production build this token would be emailed. For now it is
-  // returned directly so the flow is testable without an email provider.
-  return invitation;
+  const [workspace, inviter] = await Promise.all([
+    Workspace.findById(workspaceId).select('name'),
+    User.findById(invitedBy).select('name'),
+  ]);
+
+  const emailResult = await sendInvitationEmail({
+    to: email,
+    workspaceName: workspace?.name || 'a workspace',
+    role,
+    inviterName: inviter?.name || 'Someone',
+    inviteLink: `${env.clientUrl}/accept-invite?token=${token}`,
+  });
+
+  // The token is still returned so tests and the UI have a manual fallback
+  // (e.g. if the email lands in spam or no email provider is configured).
+  return { invitation, emailSent: emailResult.sent };
 }
 
 export async function acceptInvitation(userId: string, token: string) {

@@ -35,7 +35,9 @@ export default function Members() {
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<WorkspaceRole>('member');
-  const [inviteResult, setInviteResult] = useState<string | null>(null);
+  const [inviteResult, setInviteResult] = useState<{ emailSent: boolean; link: string } | null>(
+    null
+  );
   const [inviteError, setInviteError] = useState<string | null>(null);
 
   const canManage = myRole === 'owner' || myRole === 'admin';
@@ -46,7 +48,10 @@ export default function Members() {
     setInviteResult(null);
     try {
       const invitation = await inviteMember.mutateAsync({ email: inviteEmail, role: inviteRole });
-      setInviteResult(invitation.token);
+      setInviteResult({
+        emailSent: invitation.emailSent,
+        link: `${window.location.origin}/accept-invite?token=${invitation.token}`,
+      });
       setInviteEmail('');
     } catch (err: any) {
       setInviteError(err?.response?.data?.error?.message || 'Could not send invitation');
@@ -99,12 +104,26 @@ export default function Members() {
             </form>
             {inviteError && <p className="mt-2 text-sm text-red-600">{inviteError}</p>}
             {inviteResult && (
-              <p className="mt-2 text-xs text-ink-500">
-                Invitation created for the <strong>{inviteRole}</strong> role. Since there's no
-                email provider configured yet, copy this token and send it to your teammate —
-                they can paste it under "Have an invite?" on their Dashboard after logging in:{' '}
-                <code className="rounded bg-gray-100 px-1 py-0.5">{inviteResult}</code>
-              </p>
+              <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2.5">
+                {inviteResult.emailSent ? (
+                  <p className="text-sm text-emerald-800">
+                    ✓ Invitation email sent — they'll get a link to join with the{' '}
+                    <strong>{inviteRole}</strong> role.
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-sm text-amber-800">
+                      Invitation created, but email delivery isn't configured yet.
+                    </p>
+                    <p className="mt-1 text-xs text-ink-500">
+                      Share this link with your teammate instead:{' '}
+                      <a href={inviteResult.link} className="break-all text-orbit-600 underline">
+                        {inviteResult.link}
+                      </a>
+                    </p>
+                  </>
+                )}
+              </div>
             )}
           </div>
         )}

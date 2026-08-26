@@ -13,6 +13,8 @@ interface EnvConfig {
   jwtRefreshExpiresInDays: number;
   clientUrl: string;
   geminiApiKey?: string;
+  emailUser?: string;
+  emailAppPassword?: string;
 }
 
 function required(key: string): string {
@@ -33,4 +35,6 @@ export const env: EnvConfig = {
   jwtRefreshExpiresInDays: Number(process.env.JWT_REFRESH_EXPIRES_IN_DAYS) || 30,
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   geminiApiKey: process.env.GEMINI_API_KEY,
+  emailUser: process.env.EMAIL_USER,
+  emailAppPassword: process.env.EMAIL_APP_PASSWORD,
 };

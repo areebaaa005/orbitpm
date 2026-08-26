@@ -28,7 +28,7 @@ export const listMembers = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const inviteMember = catchAsync(async (req: Request, res: Response) => {
-  const invitation = await workspaceService.createInvitation(
+  const { invitation, emailSent } = await workspaceService.createInvitation(
     req.params.workspaceId,
     req.userId!,
     req.body.email,
@@ -41,7 +41,8 @@ export const inviteMember = catchAsync(async (req: Request, res: Response) => {
         email: invitation.email,
         role: invitation.role,
         expiresAt: invitation.expiresAt,
-        // Dev-only convenience: exposes the token since there's no email provider yet.
+        emailSent,
+        // Fallback for when no email provider is set up, or the email doesn't arrive.
         token: invitation.token,
       },
     },

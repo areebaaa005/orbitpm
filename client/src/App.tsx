@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Board from './pages/Board';
 import Analytics from './pages/Analytics';
 import Members from './pages/Members';
+import AcceptInvite from './pages/AcceptInvite';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} />
         <Route
           path="/"
           element={

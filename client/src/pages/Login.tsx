@@ -1,10 +1,13 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAcceptInvitation } from '../hooks/useWorkspaceData';
 import { OrbitMark } from '../components/OrbitMark';
+import { PENDING_INVITE_KEY } from './AcceptInvite';
 
 export default function Login() {
   const { login } = useAuth();
+  const acceptInvitation = useAcceptInvitation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +20,15 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       await login(email, password);
+      const pendingToken = sessionStorage.getItem(PENDING_INVITE_KEY);
+      if (pendingToken) {
+        try {
+          await acceptInvitation.mutateAsync(pendingToken);
+        } catch {
+          // Invitation may have expired or already been used — non-fatal, continue to app.
+        }
+        sessionStorage.removeItem(PENDING_INVITE_KEY);
+      }
       navigate('/');
     } catch (err: any) {
       setError(err?.response?.data?.error?.message || 'Something went wrong. Try again.');

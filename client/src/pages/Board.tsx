@@ -155,8 +155,8 @@ export default function Board() {
           </span>
           <h1 className="flex-1 text-lg font-semibold text-ink-900">{project?.name}</h1>
           {myRole && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize text-ink-600">
-              {myRole}
+            <span className="text-xs font-medium text-ink-400">
+              Viewing as <span className="capitalize text-ink-600">{myRole}</span>
             </span>
           )}
           <button
