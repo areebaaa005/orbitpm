@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
@@ -18,6 +18,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useDroppable } from '@dnd-kit/core';
 import { AppLayout } from '../components/AppLayout';
 import { TaskDetailModal } from '../components/TaskDetailModal';
@@ -28,6 +29,8 @@ import {
   useCreateTask,
   useMoveTask,
   useProjectSummary,
+  useMyRole,
+  useArchiveProject,
 } from '../hooks/useWorkspaceData';
 import { getSocket } from '../api/socket';
 import { Task, TaskPriority, Column } from '../types';
@@ -41,16 +44,29 @@ const PRIORITY_STYLES: Record<TaskPriority, string> = {
 
 export default function Board() {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const { data: project } = useProject(projectId);
   const { data: columns, isLoading: columnsLoading } = useColumns(projectId);
   const { data: tasks } = useTasks(projectId);
   const moveTask = useMoveTask(projectId);
   const projectSummary = useProjectSummary();
+  const { data: myRole } = useMyRole(project?.workspaceId);
+  const archiveProject = useArchiveProject(project?.workspaceId);
   const qc = useQueryClient();
+
+  const canManage = myRole === 'owner' || myRole === 'admin' || myRole === 'pm';
+  const canManageMembers = myRole === 'owner' || myRole === 'admin';
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [openTask, setOpenTask] = useState<Task | null>(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function handleDeleteProject() {
+    if (!projectId) return;
+    await archiveProject.mutateAsync(projectId);
+    navigate('/');
+  }
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -125,15 +141,24 @@ export default function Board() {
   return (
     <AppLayout>
       <div className="flex h-full flex-col">
+        <div className="h-1" style={{ backgroundColor: project?.color || '#5B5FEF' }} />
         <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-8 py-5">
           <Link to="/" className="text-sm text-ink-400 hover:text-ink-600">
             Workspaces
           </Link>
           <span className="text-ink-400">/</span>
-          <span className="rounded bg-space-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-space-700">
+          <span
+            className="rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-white"
+            style={{ backgroundColor: project?.color || '#5B5FEF' }}
+          >
             {project?.key}
           </span>
           <h1 className="flex-1 text-lg font-semibold text-ink-900">{project?.name}</h1>
+          {myRole && (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium capitalize text-ink-600">
+              {myRole}
+            </span>
+          )}
           <button
             onClick={() => {
               setShowSummary(true);
@@ -146,7 +171,46 @@ export default function Board() {
           <Link to={`/projects/${projectId}/analytics`} className="btn-secondary text-xs">
             Analytics
           </Link>
+          {canManageMembers && project?.workspaceId && (
+            <Link to={`/workspaces/${project.workspaceId}/members`} className="btn-secondary text-xs">
+              Members
+            </Link>
+          )}
+          {canManage && (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+            >
+              Delete
+            </button>
+          )}
         </header>
+
+        {confirmDelete && (
+          <div className="border-b border-red-100 bg-red-50 px-8 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-red-800">
+                Delete <span className="font-semibold">{project?.name}</span>? It will be archived
+                and removed from your workspace's active projects.
+              </p>
+              <div className="flex flex-shrink-0 gap-2">
+                <button
+                  onClick={handleDeleteProject}
+                  disabled={archiveProject.isPending}
+                  className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                >
+                  {archiveProject.isPending ? 'Deleting…' : 'Confirm delete'}
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-white"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showSummary && (
           <div className="border-b border-gray-200 bg-orbit-50 px-8 py-4">
@@ -259,9 +323,11 @@ function BoardColumn({
 
       <SortableContext items={tasks.map((t) => t._id)} strategy={verticalListSortingStrategy}>
         <div className="flex min-h-2 flex-col gap-2">
-          {tasks.map((task) => (
-            <SortableTaskCard key={task._id} task={task} onClick={() => onTaskClick(task)} />
-          ))}
+          <AnimatePresence initial={false}>
+            {tasks.map((task) => (
+              <SortableTaskCard key={task._id} task={task} onClick={() => onTaskClick(task)} />
+            ))}
+          </AnimatePresence>
         </div>
       </SortableContext>
 
@@ -322,7 +388,14 @@ function SortableTaskCard({ task, onClick }: { task: Task; onClick: () => void }
 
 function TaskCard({ task, dragging = false }: { task: Task; dragging?: boolean }) {
   return (
-    <div className={`card cursor-pointer p-3 ${dragging ? 'rotate-2 shadow-popover' : ''}`}>
+    <motion.div
+      layout={!dragging}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={dragging ? {} : { y: -2, boxShadow: '0 4px 12px rgba(15,20,36,0.08)' }}
+      transition={{ duration: 0.15 }}
+      className={`card cursor-pointer p-3 ${dragging ? 'rotate-2 shadow-popover' : ''}`}
+    >
       <p className="text-sm font-medium text-ink-900">{task.title}</p>
       <div className="mt-2 flex items-center justify-between">
         <span
@@ -331,6 +404,6 @@ function TaskCard({ task, dragging = false }: { task: Task; dragging?: boolean }
           {task.priority}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }

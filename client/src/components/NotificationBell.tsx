@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   useNotifications,
   useMarkNotificationRead,
@@ -52,8 +53,15 @@ export function NotificationBell() {
         )}
       </button>
 
-      {open && (
-        <div className="absolute right-0 z-40 mt-2 w-80 rounded-xl2 border border-gray-200 bg-white shadow-popover">
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute right-0 z-40 mt-2 w-80 rounded-xl2 border border-gray-200 bg-white shadow-popover"
+          >
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <span className="text-sm font-semibold text-ink-900">Notifications</span>
             {unreadCount > 0 && (
@@ -82,8 +90,9 @@ export function NotificationBell() {
               </button>
             ))}
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

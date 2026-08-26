@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   useComments,
   useCreateComment,
@@ -6,6 +7,8 @@ import {
   useUpdateTask,
   useSuggestSubtasks,
   useCreateTask,
+  useDeleteTask,
+  useMyRole,
 } from '../hooks/useWorkspaceData';
 import { Task, TaskPriority } from '../types';
 
@@ -34,12 +37,21 @@ export function TaskDetailModal({
   const updateTask = useUpdateTask(projectId);
   const suggestSubtasks = useSuggestSubtasks();
   const createTask = useCreateTask(projectId);
+  const deleteTask = useDeleteTask(projectId);
+  const { data: myRole } = useMyRole(task.workspaceId);
+  const canDelete = myRole === 'owner' || myRole === 'admin' || myRole === 'pm';
 
   const [description, setDescription] = useState(task.description || '');
   const [commentText, setCommentText] = useState('');
   const [tab, setTab] = useState<'comments' | 'activity'>('comments');
   const [subtaskSuggestions, setSubtaskSuggestions] = useState<string[]>([]);
   const [addedSubtasks, setAddedSubtasks] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function handleDelete() {
+    await deleteTask.mutateAsync(task._id);
+    onClose();
+  }
 
   async function handleSuggestSubtasks() {
     const suggestions = await suggestSubtasks.mutateAsync(task._id);
@@ -70,26 +82,66 @@ export function TaskDetailModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-end bg-black/30"
-      onClick={onClose}
-    >
-      <div
-        className="h-full w-full max-w-lg overflow-y-auto bg-white shadow-popover"
-        onClick={(e) => e.stopPropagation()}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-start justify-end bg-black/30"
+        onClick={onClose}
       >
+        <motion.div
+          initial={{ x: 40, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: 40, opacity: 0 }}
+          transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+          className="h-full w-full max-w-lg overflow-y-auto bg-white shadow-popover"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <span className="rounded bg-space-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-space-700">
             TASK
           </span>
-          <button
-            onClick={onClose}
-            className="rounded-full p-1 text-ink-400 hover:bg-gray-100 hover:text-ink-900"
-            aria-label="Close"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            {canDelete && (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="rounded-full p-1.5 text-ink-400 hover:bg-red-50 hover:text-red-600"
+                aria-label="Delete task"
+              >
+                🗑
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="rounded-full p-1 text-ink-400 hover:bg-gray-100 hover:text-ink-900"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
         </div>
+
+        {confirmDelete && (
+          <div className="border-b border-red-100 bg-red-50 px-6 py-3">
+            <p className="text-sm text-red-800">Delete this task permanently?</p>
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={handleDelete}
+                disabled={deleteTask.isPending}
+                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+              >
+                {deleteTask.isPending ? 'Deleting…' : 'Confirm delete'}
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="px-6 py-5">
           <h2 className="text-lg font-semibold text-ink-900">{task.title}</h2>
@@ -246,7 +298,8 @@ export function TaskDetailModal({
             </div>
           )}
         </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

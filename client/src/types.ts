@@ -26,6 +26,7 @@ export interface Project {
   key: string;
   description?: string;
   status: 'active' | 'archived';
+  color: string;
   members: string[];
   createdAt: string;
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AppLayout } from '../components/AppLayout';
 import {
   useWorkspaces,
@@ -75,17 +76,20 @@ export default function Dashboard() {
   );
 }
 
+const PROJECT_COLORS = ['#5B5FEF', '#F59E0B', '#10B981', '#EF4444', '#06B6D4', '#8B5CF6', '#EC4899', '#84CC16'];
+
 function ProjectsSection({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();
   const { data: projects, isLoading } = useProjects(workspaceId);
   const createProject = useCreateProject(workspaceId);
   const [name, setName] = useState('');
   const [key, setKey] = useState('');
+  const [color, setColor] = useState(PROJECT_COLORS[0]);
   const [showForm, setShowForm] = useState(false);
 
   async function handleCreate() {
     if (!name.trim() || !key.trim()) return;
-    const project = await createProject.mutateAsync({ name: name.trim(), key: key.trim() });
+    const project = await createProject.mutateAsync({ name: name.trim(), key: key.trim(), color });
     setName('');
     setKey('');
     setShowForm(false);
@@ -128,6 +132,21 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
         </div>
       )}
 
+      {showForm && (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-xs font-medium text-ink-600">Color:</span>
+          {PROJECT_COLORS.map((c) => (
+            <button
+              key={c}
+              onClick={() => setColor(c)}
+              className={`h-6 w-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-2 ring-ink-900' : ''}`}
+              style={{ backgroundColor: c }}
+              aria-label={`Select color ${c}`}
+            />
+          ))}
+        </div>
+      )}
+
       {isLoading && <p className="mt-4 text-sm text-ink-400">Loading projects…</p>}
 
       {projects && projects.length === 0 && !showForm && (
@@ -138,16 +157,22 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {projects?.map((p) => (
-          <button
+          <motion.button
             key={p._id}
             onClick={() => navigate(`/projects/${p._id}`)}
-            className="card flex flex-col items-start p-4 text-left transition hover:border-orbit-300"
+            whileHover={{ y: -3, boxShadow: '0 8px 20px rgba(15,20,36,0.08)' }}
+            transition={{ duration: 0.15 }}
+            className="card flex flex-col items-start overflow-hidden p-4 text-left"
+            style={{ borderLeft: `4px solid ${p.color || '#5B5FEF'}` }}
           >
-            <span className="rounded bg-space-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-space-700">
+            <span
+              className="rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-white"
+              style={{ backgroundColor: p.color || '#5B5FEF' }}
+            >
               {p.key}
             </span>
             <span className="mt-2 font-medium text-ink-900">{p.name}</span>
-          </button>
+          </motion.button>
         ))}
       </div>
     </div>

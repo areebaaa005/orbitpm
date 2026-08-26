@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { WorkspaceMembership, Project, Column, Task, Comment, Activity, AppNotification } from '../types';
+import { WorkspaceMembership, Project, Column, Task, Comment, Activity, AppNotification, WorkspaceRole } from '../types';
 
 // ---------- Workspaces ----------
 
@@ -41,7 +41,7 @@ export function useProjects(workspaceId: string | undefined) {
 export function useCreateProject(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { name: string; key: string; description?: string }) => {
+    mutationFn: async (input: { name: string; key: string; description?: string; color?: string }) => {
       const res = await api.post(`/workspaces/${workspaceId}/projects`, input);
       return res.data.data.project as Project;
     },
@@ -223,6 +223,96 @@ export function useProjectSummary() {
       const res = await api.post(`/projects/${projectId}/ai/summary`);
       return res.data.data.summary as string;
     },
+  });
+}
+
+export function useMyRole(workspaceId: string | undefined) {
+  return useQuery({
+    queryKey: ['my-role', workspaceId],
+    queryFn: async () => {
+      const res = await api.get(`/workspaces/${workspaceId}/me`);
+      return res.data.data.role as WorkspaceRole;
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+export interface MemberEntry {
+  userId: { _id: string; name: string; email: string; avatar: string | null };
+  role: WorkspaceRole;
+  joinedAt: string;
+}
+
+export function useMembers(workspaceId: string | undefined) {
+  return useQuery({
+    queryKey: ['members', workspaceId],
+    queryFn: async () => {
+      const res = await api.get(`/workspaces/${workspaceId}/members`);
+      return res.data.data.members as MemberEntry[];
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+export function useInviteMember(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { email: string; role: WorkspaceRole }) => {
+      const res = await api.post(`/workspaces/${workspaceId}/invitations`, input);
+      return res.data.data.invitation;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['members', workspaceId] }),
+  });
+}
+
+export function useUpdateMemberRole(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: WorkspaceRole }) => {
+      await api.patch(`/workspaces/${workspaceId}/members/${userId}`, { role });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['members', workspaceId] }),
+  });
+}
+
+export function useRemoveMember(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      await api.delete(`/workspaces/${workspaceId}/members/${userId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['members', workspaceId] }),
+  });
+}
+
+export function useUpdateWorkspace(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const res = await api.patch(`/workspaces/${workspaceId}`, { name });
+      return res.data.data.workspace;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workspaces'] }),
+  });
+}
+
+export function useDeleteTask(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      await api.delete(`/tasks/${taskId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks', projectId] }),
+  });
+}
+
+export function useArchiveProject(workspaceId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (projectId: string) => {
+      await api.delete(`/projects/${projectId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects', workspaceId] }),
   });
 }
 
