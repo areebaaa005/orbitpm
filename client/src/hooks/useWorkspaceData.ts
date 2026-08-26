@@ -226,6 +226,17 @@ export function useProjectSummary() {
   });
 }
 
+export function useAcceptInvitation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (token: string) => {
+      const res = await api.post('/workspaces/invitations/accept', { token });
+      return res.data.data.workspaceId as string;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workspaces'] }),
+  });
+}
+
 export function useMyRole(workspaceId: string | undefined) {
   return useQuery({
     queryKey: ['my-role', workspaceId],

@@ -100,8 +100,10 @@ export default function Members() {
             {inviteError && <p className="mt-2 text-sm text-red-600">{inviteError}</p>}
             {inviteResult && (
               <p className="mt-2 text-xs text-ink-500">
-                Invitation created. Since there's no email provider configured yet, share this
-                token with your teammate to accept manually: <code className="rounded bg-gray-100 px-1 py-0.5">{inviteResult}</code>
+                Invitation created for the <strong>{inviteRole}</strong> role. Since there's no
+                email provider configured yet, copy this token and send it to your teammate —
+                they can paste it under "Have an invite?" on their Dashboard after logging in:{' '}
+                <code className="rounded bg-gray-100 px-1 py-0.5">{inviteResult}</code>
               </p>
             )}
           </div>

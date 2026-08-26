@@ -7,13 +7,18 @@ import {
   useCreateWorkspace,
   useProjects,
   useCreateProject,
+  useAcceptInvitation,
 } from '../hooks/useWorkspaceData';
 
 export default function Dashboard() {
   const { data: workspaces, isLoading } = useWorkspaces();
   const createWorkspace = useCreateWorkspace();
+  const acceptInvitation = useAcceptInvitation();
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState('');
+  const [acceptError, setAcceptError] = useState<string | null>(null);
+  const [acceptSuccess, setAcceptSuccess] = useState(false);
 
   const activeWorkspace = workspaces?.find((w) => w.workspace._id === activeWorkspaceId);
 
@@ -22,6 +27,20 @@ export default function Dashboard() {
     const workspace = await createWorkspace.mutateAsync(newWorkspaceName.trim());
     setNewWorkspaceName('');
     setActiveWorkspaceId(workspace._id);
+  }
+
+  async function handleAcceptInvite() {
+    if (!inviteToken.trim()) return;
+    setAcceptError(null);
+    setAcceptSuccess(false);
+    try {
+      const workspaceId = await acceptInvitation.mutateAsync(inviteToken.trim());
+      setInviteToken('');
+      setAcceptSuccess(true);
+      setActiveWorkspaceId(workspaceId);
+    } catch (err: any) {
+      setAcceptError(err?.response?.data?.error?.message || 'Could not accept this invitation');
+    }
   }
 
   return (
@@ -65,6 +84,26 @@ export default function Dashboard() {
             >
               {createWorkspace.isPending ? 'Creating…' : 'Create workspace'}
             </button>
+          </div>
+
+          <div className="card flex flex-col gap-2 p-4">
+            <label className="text-xs font-medium text-ink-600">Have an invite?</label>
+            <input
+              className="input-field"
+              placeholder="Paste invitation token"
+              value={inviteToken}
+              onChange={(e) => setInviteToken(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAcceptInvite()}
+            />
+            <button
+              onClick={handleAcceptInvite}
+              disabled={acceptInvitation.isPending}
+              className="btn-secondary"
+            >
+              {acceptInvitation.isPending ? 'Joining…' : 'Join workspace'}
+            </button>
+            {acceptError && <p className="text-xs text-red-600">{acceptError}</p>}
+            {acceptSuccess && <p className="text-xs text-emerald-600">Joined! Select it above.</p>}
           </div>
         </div>
 
