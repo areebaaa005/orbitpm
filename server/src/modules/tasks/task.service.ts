@@ -10,7 +10,10 @@ interface CreateTaskInput {
   description?: string;
   assigneeIds?: string[];
   priority?: string;
-  labels?: string[];
+  type?: string;
+  storyPoints?: number;
+  epicId?: string;
+  labels?: { name: string; color: string }[];
   dueDate?: string;
 }
 
@@ -30,6 +33,9 @@ export async function createTask(
     assigneeIds: input.assigneeIds || [],
     reporterId,
     priority: input.priority || 'medium',
+    type: input.type || 'task',
+    storyPoints: input.storyPoints,
+    epicId: input.epicId,
     labels: input.labels || [],
     dueDate: input.dueDate,
     order: count,
@@ -66,6 +72,8 @@ interface ListTaskFilters {
   assigneeId?: string;
   priority?: string;
   search?: string;
+  sprintId?: string; // pass 'backlog' to get tasks with no sprint
+  epicId?: string;
   page?: number;
   limit?: number;
 }
@@ -75,6 +83,12 @@ export async function listTasks(projectId: string, filters: ListTaskFilters) {
   if (filters.columnId) query.columnId = filters.columnId;
   if (filters.assigneeId) query.assigneeIds = filters.assigneeId;
   if (filters.priority) query.priority = filters.priority;
+  if (filters.epicId) query.epicId = filters.epicId;
+  if (filters.sprintId === 'backlog') {
+    query.sprintId = { $exists: false };
+  } else if (filters.sprintId) {
+    query.sprintId = filters.sprintId;
+  }
   if (filters.search) query.$text = { $search: filters.search };
 
   const page = filters.page || 1;

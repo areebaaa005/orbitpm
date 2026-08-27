@@ -13,12 +13,14 @@ export const createTask = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const listTasks = catchAsync(async (req: Request, res: Response) => {
-  const { columnId, assigneeId, priority, search, page, limit } = req.query;
+  const { columnId, assigneeId, priority, search, sprintId, epicId, page, limit } = req.query;
   const result = await taskService.listTasks(req.params.projectId, {
     columnId: columnId as string,
     assigneeId: assigneeId as string,
     priority: priority as string,
     search: search as string,
+    sprintId: sprintId as string,
+    epicId: epicId as string,
     page: page ? Number(page) : undefined,
     limit: limit ? Number(limit) : undefined,
   });
