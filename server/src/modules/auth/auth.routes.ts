@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { validate } from '../../middleware/validate';
 import { requireAuth } from '../../middleware/auth';
-import { registerSchema, loginSchema } from './auth.validation';
+import { registerSchema, loginSchema, updateProfileSchema } from './auth.validation';
 import * as authController from './auth.controller';
 
 const router = Router();
@@ -21,5 +21,6 @@ router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/refresh', authController.refresh);
 router.post('/logout', authController.logout);
 router.get('/me', requireAuth, authController.me);
+router.patch('/me', requireAuth, validate(updateProfileSchema), authController.updateProfile);
 
 export default router;

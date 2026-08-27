@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { catchAsync } from '../../utils/catchAsync';
 import { env } from '../../config/env';
 import * as authService from './auth.service';
+import * as userService from '../users/user.service';
 
 const REFRESH_COOKIE_NAME = 'refreshToken';
 
@@ -52,5 +53,10 @@ export const logout = catchAsync(async (req: Request, res: Response) => {
 
 export const me = catchAsync(async (req: Request, res: Response) => {
   const user = await authService.getCurrentUser(req.userId!);
+  res.status(200).json({ success: true, data: { user } });
+});
+
+export const updateProfile = catchAsync(async (req: Request, res: Response) => {
+  const user = await userService.updateProfile(req.userId!, req.body);
   res.status(200).json({ success: true, data: { user } });
 });

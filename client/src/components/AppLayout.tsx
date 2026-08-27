@@ -2,12 +2,14 @@ import { ReactNode, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { OrbitMark } from './OrbitMark';
 import { NotificationBell } from './NotificationBell';
+import { EditProfileModal } from './EditProfileModal';
 import { useAuth } from '../context/AuthContext';
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
 
   async function handleLogout() {
     await logout();
@@ -41,7 +43,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </nav>
 
       <div className="border-t border-space-800 px-3 py-4">
-        <div className="flex items-center gap-2 rounded-lg px-2 py-2">
+        <button
+          onClick={() => setEditProfileOpen(true)}
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition hover:bg-space-800"
+        >
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orbit-500 text-sm font-semibold text-white">
             {user?.name?.[0]?.toUpperCase() || '?'}
           </div>
@@ -49,7 +54,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <p className="truncate text-sm font-medium text-white">{user?.name}</p>
             <p className="truncate text-xs text-space-300">{user?.email}</p>
           </div>
-        </div>
+        </button>
         <button
           onClick={handleLogout}
           className="mt-2 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-space-300 transition hover:bg-space-800 hover:text-white"
@@ -93,6 +98,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+
+      {editProfileOpen && <EditProfileModal onClose={() => setEditProfileOpen(false)} />}
     </div>
   );
 }
