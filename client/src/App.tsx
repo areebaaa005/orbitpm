@@ -8,6 +8,8 @@ import Board from './pages/Board';
 import Analytics from './pages/Analytics';
 import Members from './pages/Members';
 import AcceptInvite from './pages/AcceptInvite';
+import Backlog from './pages/Backlog';
+import Epics from './pages/Epics';
 
 export default function App() {
   return (
@@ -49,10 +51,18 @@ export default function App() {
           }
         />
         <Route
-          path="/workspaces/:workspaceId/members"
+          path="/projects/:projectId/backlog"
           element={
             <ProtectedRoute>
-              <Members />
+              <Backlog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/projects/:projectId/epics"
+          element={
+            <ProtectedRoute>
+              <Epics />
             </ProtectedRoute>
           }
         />

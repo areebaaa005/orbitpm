@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { WorkspaceMembership, Project, Column, Task, Comment, Activity, AppNotification, WorkspaceRole } from '../types';
+import { WorkspaceMembership, Project, Column, Task, Comment, Activity, AppNotification, WorkspaceRole, Epic, Sprint } from '../types';
 
 // ---------- Workspaces ----------
 
@@ -75,11 +75,13 @@ export function useColumns(projectId: string | undefined) {
 
 // ---------- Tasks ----------
 
-export function useTasks(projectId: string | undefined) {
+export function useTasks(projectId: string | undefined, filters?: { sprintId?: string }) {
   return useQuery({
-    queryKey: ['tasks', projectId],
+    queryKey: ['tasks', projectId, filters?.sprintId],
     queryFn: async () => {
-      const res = await api.get(`/projects/${projectId}/tasks`, { params: { limit: 100 } });
+      const res = await api.get(`/projects/${projectId}/tasks`, {
+        params: { limit: 100, ...filters },
+      });
       return res.data.data.tasks as Task[];
     },
     enabled: !!projectId,
@@ -94,6 +96,12 @@ export function useCreateTask(projectId: string | undefined) {
       title: string;
       priority?: string;
       description?: string;
+      type?: string;
+      storyPoints?: number;
+      epicId?: string;
+      assigneeIds?: string[];
+      labels?: { name: string; color: string }[];
+      dueDate?: string;
     }) => {
       const res = await api.post(`/projects/${projectId}/tasks`, input);
       return res.data.data.task as Task;
@@ -340,6 +348,114 @@ export function useMoveTask(projectId: string | undefined) {
       order: number;
     }) => {
       const res = await api.patch(`/tasks/${taskId}/move`, { columnId, order });
+      return res.data.data.task as Task;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks', projectId] }),
+  });
+}
+
+// ---------- Epics ----------
+
+export function useEpics(projectId: string | undefined) {
+  return useQuery({
+    queryKey: ['epics', projectId],
+    queryFn: async () => {
+      const res = await api.get(`/projects/${projectId}/epics`);
+      return res.data.data.epics as Epic[];
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateEpic(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { name: string; description?: string; color?: string }) => {
+      const res = await api.post(`/projects/${projectId}/epics`, input);
+      return res.data.data.epic as Epic;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['epics', projectId] }),
+  });
+}
+
+export function useUpdateEpic(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ epicId, ...updates }: { epicId: string } & Partial<Epic>) => {
+      const res = await api.patch(`/projects/${projectId}/epics/${epicId}`, updates);
+      return res.data.data.epic as Epic;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['epics', projectId] }),
+  });
+}
+
+export function useDeleteEpic(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (epicId: string) => {
+      await api.delete(`/projects/${projectId}/epics/${epicId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['epics', projectId] }),
+  });
+}
+
+// ---------- Sprints ----------
+
+export function useSprints(projectId: string | undefined) {
+  return useQuery({
+    queryKey: ['sprints', projectId],
+    queryFn: async () => {
+      const res = await api.get(`/projects/${projectId}/sprints`);
+      return res.data.data.sprints as Sprint[];
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useCreateSprint(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { name: string; goal?: string }) => {
+      const res = await api.post(`/projects/${projectId}/sprints`, input);
+      return res.data.data.sprint as Sprint;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['sprints', projectId] }),
+  });
+}
+
+export function useStartSprint(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (sprintId: string) => {
+      const res = await api.patch(`/projects/${projectId}/sprints/${sprintId}/start`);
+      return res.data.data.sprint as Sprint;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sprints', projectId] });
+      qc.invalidateQueries({ queryKey: ['tasks', projectId] });
+    },
+  });
+}
+
+export function useCompleteSprint(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (sprintId: string) => {
+      const res = await api.patch(`/projects/${projectId}/sprints/${sprintId}/complete`);
+      return res.data.data.sprint as Sprint;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sprints', projectId] });
+      qc.invalidateQueries({ queryKey: ['tasks', projectId] });
+    },
+  });
+}
+
+export function useAssignTaskToSprint(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ taskId, sprintId }: { taskId: string; sprintId: string | null }) => {
+      const res = await api.patch(`/tasks/${taskId}/sprint`, { sprintId });
       return res.data.data.task as Task;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks', projectId] }),

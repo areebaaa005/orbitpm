@@ -31,9 +31,15 @@ import {
   useProjectSummary,
   useMyRole,
   useArchiveProject,
+  useMembers,
+  useSprints,
+  MemberEntry,
 } from '../hooks/useWorkspaceData';
+import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../api/socket';
 import { Task, TaskPriority, Column } from '../types';
+
+const TYPE_ICONS: Record<string, string> = { task: '✓', bug: '🐞', story: '📗', spike: '⚡' };
 
 const PRIORITY_STYLES: Record<TaskPriority, string> = {
   low: 'bg-gray-100 text-gray-600',
@@ -45,9 +51,12 @@ const PRIORITY_STYLES: Record<TaskPriority, string> = {
 export default function Board() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { data: project } = useProject(projectId);
   const { data: columns, isLoading: columnsLoading } = useColumns(projectId);
   const { data: tasks } = useTasks(projectId);
+  const { data: members } = useMembers(project?.workspaceId);
+  const { data: sprints } = useSprints(projectId);
   const moveTask = useMoveTask(projectId);
   const projectSummary = useProjectSummary();
   const { data: myRole } = useMyRole(project?.workspaceId);
@@ -61,6 +70,26 @@ export default function Board() {
   const [openTask, setOpenTask] = useState<Task | null>(null);
   const [showSummary, setShowSummary] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [onlyMine, setOnlyMine] = useState(false);
+  const [onlyOverdue, setOnlyOverdue] = useState(false);
+
+  const activeSprint = sprints?.find((s) => s.status === 'active');
+
+  const filteredTasks = useMemo(() => {
+    if (!tasks) return tasks;
+    return tasks.filter((t) => {
+      // When sprints exist, the board shows only the active sprint's work —
+      // everything else lives in the Backlog until pulled in.
+      if (sprints && sprints.length > 0) {
+        if (activeSprint ? t.sprintId !== activeSprint._id : !!t.sprintId) return false;
+      }
+      if (searchQuery && !t.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (onlyMine && !(user && t.assigneeIds.includes(user.id))) return false;
+      if (onlyOverdue && !(t.dueDate && new Date(t.dueDate) < new Date())) return false;
+      return true;
+    });
+  }, [tasks, searchQuery, onlyMine, onlyOverdue, user, sprints, activeSprint]);
 
   async function handleDeleteProject() {
     if (!projectId) return;
@@ -96,16 +125,16 @@ export default function Board() {
   const tasksByColumn = useMemo(() => {
     const map: Record<string, Task[]> = {};
     for (const col of columns || []) map[col._id] = [];
-    for (const t of tasks || []) {
+    for (const t of filteredTasks || []) {
       if (!map[t.columnId]) map[t.columnId] = [];
       map[t.columnId].push(t);
     }
     for (const colId in map) map[colId].sort((a, b) => a.order - b.order);
     return map;
-  }, [columns, tasks]);
+  }, [columns, filteredTasks]);
 
   function handleDragStart(event: DragStartEvent) {
-    const task = tasks?.find((t) => t._id === event.active.id);
+    const task = filteredTasks?.find((t) => t._id === event.active.id);
     setActiveTask(task || null);
   }
 
@@ -114,14 +143,14 @@ export default function Board() {
     const { active, over } = event;
     if (!over) return;
 
-    const activeTaskData = tasks?.find((t) => t._id === active.id);
+    const activeTaskData = filteredTasks?.find((t) => t._id === active.id);
     if (!activeTaskData) return;
 
     // Dropped on a column (empty area) or on another task
     const overIsColumn = columns?.some((c) => c._id === over.id);
     const targetColumnId = overIsColumn
       ? (over.id as string)
-      : tasks?.find((t) => t._id === over.id)?.columnId;
+      : filteredTasks?.find((t) => t._id === over.id)?.columnId;
 
     if (!targetColumnId) return;
 
@@ -171,6 +200,12 @@ export default function Board() {
           <Link to={`/projects/${projectId}/analytics`} className="btn-secondary text-xs">
             Analytics
           </Link>
+          <Link to={`/projects/${projectId}/backlog`} className="btn-secondary text-xs">
+            Backlog
+          </Link>
+          <Link to={`/projects/${projectId}/epics`} className="btn-secondary text-xs">
+            Epics
+          </Link>
           {canManageMembers && project?.workspaceId && (
             <Link to={`/workspaces/${project.workspaceId}/members`} className="btn-secondary text-xs">
               Members
@@ -185,6 +220,31 @@ export default function Board() {
             </button>
           )}
         </header>
+
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-8 py-3">
+          <input
+            className="input-field max-w-xs text-sm"
+            placeholder="🔍 Search tasks…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button
+            onClick={() => setOnlyMine((v) => !v)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+              onlyMine ? 'bg-orbit-500 text-white' : 'bg-gray-100 text-ink-600 hover:bg-gray-200'
+            }`}
+          >
+            My tasks
+          </button>
+          <button
+            onClick={() => setOnlyOverdue((v) => !v)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+              onlyOverdue ? 'bg-red-500 text-white' : 'bg-gray-100 text-ink-600 hover:bg-gray-200'
+            }`}
+          >
+            Overdue
+          </button>
+        </div>
 
         {confirmDelete && (
           <div className="border-b border-red-100 bg-red-50 px-8 py-4">
@@ -247,6 +307,16 @@ export default function Board() {
         <div className="flex-1 overflow-x-auto px-8 py-6">
           {columnsLoading && <p className="text-sm text-ink-400">Loading board…</p>}
 
+          {sprints && sprints.length > 0 && !activeSprint && (
+            <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              No active sprint —{' '}
+              <Link to={`/projects/${projectId}/backlog`} className="underline">
+                start one from the Backlog
+              </Link>{' '}
+              to begin working the board.
+            </p>
+          )}
+
           <DndContext
             sensors={sensors}
             collisionDetection={closestCorners}
@@ -260,13 +330,14 @@ export default function Board() {
                   projectId={projectId!}
                   column={col}
                   tasks={tasksByColumn[col._id] || []}
+                  members={members}
                   onTaskClick={setOpenTask}
                 />
               ))}
             </div>
 
             <DragOverlay>
-              {activeTask && <TaskCard task={activeTask} dragging />}
+              {activeTask && <TaskCard task={activeTask} members={members} dragging />}
             </DragOverlay>
           </DndContext>
         </div>
@@ -287,11 +358,13 @@ function BoardColumn({
   projectId,
   column,
   tasks,
+  members,
   onTaskClick,
 }: {
   projectId: string;
   column: Column;
   tasks: Task[];
+  members?: MemberEntry[];
   onTaskClick: (t: Task) => void;
 }) {
   const createTask = useCreateTask(projectId);
@@ -325,7 +398,7 @@ function BoardColumn({
         <div className="flex min-h-2 flex-col gap-2">
           <AnimatePresence initial={false}>
             {tasks.map((task) => (
-              <SortableTaskCard key={task._id} task={task} onClick={() => onTaskClick(task)} />
+              <SortableTaskCard key={task._id} task={task} members={members} onClick={() => onTaskClick(task)} />
             ))}
           </AnimatePresence>
         </div>
@@ -368,7 +441,15 @@ function BoardColumn({
   );
 }
 
-function SortableTaskCard({ task, onClick }: { task: Task; onClick: () => void }) {
+function SortableTaskCard({
+  task,
+  members,
+  onClick,
+}: {
+  task: Task;
+  members?: MemberEntry[];
+  onClick: () => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task._id,
   });
@@ -381,12 +462,25 @@ function SortableTaskCard({ task, onClick }: { task: Task; onClick: () => void }
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} onClick={onClick}>
-      <TaskCard task={task} />
+      <TaskCard task={task} members={members} />
     </div>
   );
 }
 
-function TaskCard({ task, dragging = false }: { task: Task; dragging?: boolean }) {
+function TaskCard({
+  task,
+  members,
+  dragging = false,
+}: {
+  task: Task;
+  members?: MemberEntry[];
+  dragging?: boolean;
+}) {
+  const assignees = members?.filter((m) => task.assigneeIds.includes(m.userId._id)) || [];
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+  const checklistTotal = task.checklist?.length || 0;
+  const checklistDone = task.checklist?.filter((c) => c.done).length || 0;
+
   return (
     <motion.div
       layout={!dragging}
@@ -396,14 +490,65 @@ function TaskCard({ task, dragging = false }: { task: Task; dragging?: boolean }
       transition={{ duration: 0.15 }}
       className={`card cursor-pointer p-3 ${dragging ? 'rotate-2 shadow-popover' : ''}`}
     >
-      <p className="text-sm font-medium text-ink-900">{task.title}</p>
-      <div className="mt-2 flex items-center justify-between">
+      {task.labels?.length > 0 && (
+        <div className="mb-1.5 flex flex-wrap gap-1">
+          {task.labels.map((l) => (
+            <span
+              key={l.name}
+              className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white"
+              style={{ backgroundColor: l.color }}
+            >
+              {l.name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <p className="flex items-start gap-1 text-sm font-medium text-ink-900">
+        <span className="flex-shrink-0">{TYPE_ICONS[task.type] || '✓'}</span>
+        {task.title}
+      </p>
+
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${PRIORITY_STYLES[task.priority]}`}
         >
           {task.priority}
         </span>
+        {typeof task.storyPoints === 'number' && (
+          <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+            {task.storyPoints} pts
+          </span>
+        )}
+        {task.dueDate && (
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              isOverdue ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-600'
+            }`}
+          >
+            {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+          </span>
+        )}
+        {checklistTotal > 0 && (
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+            ☑ {checklistDone}/{checklistTotal}
+          </span>
+        )}
       </div>
+
+      {assignees.length > 0 && (
+        <div className="mt-2 flex -space-x-1.5">
+          {assignees.slice(0, 4).map((m) => (
+            <span
+              key={m.userId._id}
+              title={m.userId.name}
+              className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-orbit-500 text-[10px] font-semibold text-white"
+            >
+              {m.userId.name?.[0]?.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }

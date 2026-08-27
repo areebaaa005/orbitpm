@@ -40,21 +40,57 @@ export interface Column {
 }
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskType = 'task' | 'bug' | 'story' | 'spike';
+
+export interface TaskLabel {
+  name: string;
+  color: string;
+}
+
+export interface ChecklistItem {
+  _id: string;
+  text: string;
+  done: boolean;
+}
 
 export interface Task {
   _id: string;
   workspaceId: string;
   projectId: string;
   columnId: string;
+  epicId?: string;
+  sprintId?: string;
   title: string;
   description?: string;
   assigneeIds: string[];
   reporterId: string;
   priority: TaskPriority;
-  labels: string[];
+  type: TaskType;
+  storyPoints?: number;
+  labels: TaskLabel[];
+  checklist: ChecklistItem[];
   dueDate?: string;
   order: number;
   createdAt: string;
+}
+
+export interface Epic {
+  _id: string;
+  projectId: string;
+  name: string;
+  description?: string;
+  color: string;
+  status: 'open' | 'closed';
+}
+
+export interface Sprint {
+  _id: string;
+  projectId: string;
+  name: string;
+  goal?: string;
+  status: 'planned' | 'active' | 'completed';
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface Comment {
