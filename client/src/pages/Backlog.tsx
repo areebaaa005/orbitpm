@@ -7,6 +7,7 @@ import {
   useCreateSprint,
   useStartSprint,
   useCompleteSprint,
+  useDeleteSprint,
   useAssignTaskToSprint,
   useMyRole,
 } from '../hooks/useWorkspaceData';
@@ -23,10 +24,12 @@ export default function Backlog() {
   const { data: project } = useProject(projectId);
   const { data: myRole } = useMyRole(project?.workspaceId);
   const { data: sprints } = useSprints(projectId);
+  const { data: allTasks } = useTasks(projectId);
   const { data: backlogTasks } = useTasks(projectId, { sprintId: 'backlog' });
   const createSprint = useCreateSprint(projectId);
   const startSprint = useStartSprint(projectId);
   const completeSprint = useCompleteSprint(projectId);
+  const deleteSprint = useDeleteSprint(projectId);
   const assignToSprint = useAssignTaskToSprint(projectId);
 
   const [newSprintName, setNewSprintName] = useState('');
@@ -54,37 +57,55 @@ export default function Backlog() {
         <div className="mt-6 card p-5">
           <h2 className="text-sm font-semibold text-ink-900">Sprints</h2>
           <div className="mt-3 flex flex-col gap-2">
-            {sprints?.map((s) => (
-              <div key={s._id} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-ink-900">{s.name}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${SPRINT_STATUS_STYLES[s.status]}`}>
-                    {s.status}
-                  </span>
-                </div>
-                {canManage && (
-                  <div className="flex gap-2">
-                    {s.status === 'planned' && (
-                      <button
-                        onClick={() => startSprint.mutate(s._id)}
-                        disabled={!!activeSprint || startSprint.isPending}
-                        className="text-xs font-medium text-orbit-600 hover:text-orbit-700 disabled:text-ink-300"
-                      >
-                        Start sprint
-                      </button>
-                    )}
-                    {s.status === 'active' && (
-                      <button
-                        onClick={() => completeSprint.mutate(s._id)}
-                        className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
-                      >
-                        Complete sprint
-                      </button>
-                    )}
+            {sprints?.map((s) => {
+              const sprintTaskCount = allTasks?.filter((t) => t.sprintId === s._id).length || 0;
+              return (
+                <div key={s._id} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-ink-900">{s.name}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${SPRINT_STATUS_STYLES[s.status]}`}>
+                      {s.status}
+                    </span>
+                    <span className="text-xs text-ink-400">{sprintTaskCount} task{sprintTaskCount !== 1 ? 's' : ''}</span>
                   </div>
-                )}
-              </div>
-            ))}
+                  {canManage && (
+                    <div className="flex items-center gap-3">
+                      {s.status === 'planned' && (
+                        <button
+                          onClick={() => {
+                            if (sprintTaskCount === 0) {
+                              const confirmed = window.confirm(
+                                'This sprint has no tasks yet. Starting it now will show an empty board. Start anyway?'
+                              );
+                              if (!confirmed) return;
+                            }
+                            startSprint.mutate(s._id);
+                          }}
+                          disabled={!!activeSprint || startSprint.isPending}
+                          className="text-xs font-medium text-orbit-600 hover:text-orbit-700 disabled:text-ink-300"
+                        >
+                          Start sprint
+                        </button>
+                      )}
+                      {s.status === 'active' && (
+                        <button
+                          onClick={() => completeSprint.mutate(s._id)}
+                          className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+                        >
+                          Complete sprint
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteSprint.mutate(s._id)}
+                        className="text-xs font-medium text-ink-400 hover:text-red-600"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             {sprints?.length === 0 && (
               <p className="text-sm text-ink-400">No sprints yet — create one below.</p>
             )}

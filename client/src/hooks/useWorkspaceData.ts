@@ -451,6 +451,19 @@ export function useCompleteSprint(projectId: string | undefined) {
   });
 }
 
+export function useDeleteSprint(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (sprintId: string) => {
+      await api.delete(`/projects/${projectId}/sprints/${sprintId}`);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['sprints', projectId] });
+      qc.invalidateQueries({ queryKey: ['tasks', projectId] });
+    },
+  });
+}
+
 export function useAssignTaskToSprint(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
