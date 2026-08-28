@@ -33,6 +33,9 @@ import {
   useArchiveProject,
   useMembers,
   useSprints,
+  useUpdateColumn,
+  useDeleteColumn,
+  useReorderColumn,
   MemberEntry,
 } from '../hooks/useWorkspaceData';
 import { useAuth } from '../context/AuthContext';
@@ -331,6 +334,8 @@ export default function Board() {
                   column={col}
                   tasks={tasksByColumn[col._id] || []}
                   members={members}
+                  allColumns={columns}
+                  canManage={canManage}
                   onTaskClick={setOpenTask}
                 />
               ))}
@@ -359,24 +364,54 @@ function BoardColumn({
   column,
   tasks,
   members,
+  allColumns,
+  canManage,
   onTaskClick,
 }: {
   projectId: string;
   column: Column;
   tasks: Task[];
   members?: MemberEntry[];
+  allColumns: Column[];
+  canManage: boolean;
   onTaskClick: (t: Task) => void;
 }) {
   const createTask = useCreateTask(projectId);
+  const updateColumn = useUpdateColumn(projectId);
+  const deleteColumn = useDeleteColumn(projectId);
+  const reorderColumn = useReorderColumn(projectId);
   const [isAdding, setIsAdding] = useState(false);
   const [title, setTitle] = useState('');
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(column.name);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [moveTasksTo, setMoveTasksTo] = useState('');
   const { setNodeRef, isOver } = useDroppable({ id: column._id });
+
+  const otherColumns = allColumns.filter((c) => c._id !== column._id);
+  const colIndex = allColumns.findIndex((c) => c._id === column._id);
 
   async function handleAdd() {
     if (!title.trim()) return;
     await createTask.mutateAsync({ columnId: column._id, title: title.trim() });
     setTitle('');
     setIsAdding(false);
+  }
+
+  function handleRenameSubmit() {
+    if (renameValue.trim() && renameValue.trim() !== column.name) {
+      updateColumn.mutate({ columnId: column._id, name: renameValue.trim() });
+    }
+    setIsRenaming(false);
+  }
+
+  async function handleDelete() {
+    await deleteColumn.mutateAsync({
+      columnId: column._id,
+      moveTasksTo: tasks.length > 0 ? moveTasksTo : undefined,
+    });
+    setShowDeleteConfirm(false);
   }
 
   return (
@@ -387,12 +422,119 @@ function BoardColumn({
       }`}
     >
       <div className="mb-3 flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: column.color }} />
-          <span className="text-sm font-semibold text-ink-900">{column.name}</span>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ backgroundColor: column.color }} />
+          {isRenaming ? (
+            <input
+              autoFocus
+              className="min-w-0 flex-1 rounded border border-orbit-300 bg-white px-1 py-0.5 text-sm font-semibold text-ink-900"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onBlur={handleRenameSubmit}
+              onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit()}
+            />
+          ) : (
+            <span className="truncate text-sm font-semibold text-ink-900">{column.name}</span>
+          )}
         </div>
-        <span className="text-xs text-ink-400">{tasks.length}</span>
+        <div className="flex flex-shrink-0 items-center gap-1">
+          <span className="text-xs text-ink-400">{tasks.length}</span>
+          {canManage && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu((s) => !s)}
+                className="rounded p-0.5 text-ink-400 hover:bg-gray-200 hover:text-ink-700"
+              >
+                ⋯
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 z-30 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-popover">
+                  <button
+                    onClick={() => {
+                      setIsRenaming(true);
+                      setShowMenu(false);
+                    }}
+                    className="block w-full px-3 py-1.5 text-left text-xs text-ink-700 hover:bg-gray-50"
+                  >
+                    Rename
+                  </button>
+                  {colIndex > 0 && (
+                    <button
+                      onClick={() => {
+                        reorderColumn.mutate({ columnId: column._id, direction: 'up' });
+                        setShowMenu(false);
+                      }}
+                      className="block w-full px-3 py-1.5 text-left text-xs text-ink-700 hover:bg-gray-50"
+                    >
+                      ← Move left
+                    </button>
+                  )}
+                  {colIndex < allColumns.length - 1 && (
+                    <button
+                      onClick={() => {
+                        reorderColumn.mutate({ columnId: column._id, direction: 'down' });
+                        setShowMenu(false);
+                      }}
+                      className="block w-full px-3 py-1.5 text-left text-xs text-ink-700 hover:bg-gray-50"
+                    >
+                      Move right →
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(true);
+                      setShowMenu(false);
+                    }}
+                    className="block w-full px-3 py-1.5 text-left text-xs text-red-600 hover:bg-red-50"
+                  >
+                    Delete column
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {showDeleteConfirm && (
+        <div className="mb-2 rounded-lg border border-red-100 bg-red-50 p-2.5">
+          <p className="text-xs text-red-800">Delete "{column.name}"?</p>
+          {tasks.length > 0 && (
+            <>
+              <p className="mt-1 text-xs text-red-700">
+                {tasks.length} task(s) here — move them first:
+              </p>
+              <select
+                className="mt-1 w-full rounded border border-red-200 px-1.5 py-1 text-xs"
+                value={moveTasksTo}
+                onChange={(e) => setMoveTasksTo(e.target.value)}
+              >
+                <option value="">Choose a column…</option>
+                {otherColumns.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          <div className="mt-2 flex gap-1.5">
+            <button
+              onClick={handleDelete}
+              disabled={(tasks.length > 0 && !moveTasksTo) || deleteColumn.isPending}
+              className="rounded bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-40"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              className="rounded border border-gray-300 px-2 py-1 text-xs text-ink-600 hover:bg-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <SortableContext items={tasks.map((t) => t._id)} strategy={verticalListSortingStrategy}>
         <div className="flex min-h-2 flex-col gap-2">
