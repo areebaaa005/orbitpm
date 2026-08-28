@@ -15,6 +15,9 @@ interface EnvConfig {
   geminiApiKey?: string;
   emailUser?: string;
   emailAppPassword?: string;
+  cloudinaryCloudName?: string;
+  cloudinaryApiKey?: string;
+  cloudinaryApiSecret?: string;
 }
 
 function required(key: string): string {
@@ -37,4 +40,7 @@ export const env: EnvConfig = {
   geminiApiKey: process.env.GEMINI_API_KEY,
   emailUser: process.env.EMAIL_USER,
   emailAppPassword: process.env.EMAIL_APP_PASSWORD,
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
 };

@@ -8,6 +8,17 @@ export interface ITaskLabel {
   color: string;
 }
 
+export interface IAttachment {
+  _id: Types.ObjectId;
+  url: string;
+  publicId: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  uploadedBy: Types.ObjectId;
+  uploadedAt: Date;
+}
+
 export interface IChecklistItem {
   _id: Types.ObjectId;
   text: string;
@@ -30,11 +41,22 @@ export interface ITask extends Document {
   storyPoints?: number;
   labels: ITaskLabel[];
   checklist: IChecklistItem[];
+  attachments: IAttachment[];
   dueDate?: Date;
   order: number;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const attachmentSchema = new Schema<IAttachment>({
+  url: { type: String, required: true },
+  publicId: { type: String, required: true },
+  filename: { type: String, required: true },
+  size: { type: Number, required: true },
+  mimeType: { type: String, required: true },
+  uploadedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  uploadedAt: { type: Date, default: Date.now },
+});
 
 const checklistItemSchema = new Schema<IChecklistItem>({
   text: { type: String, required: true, trim: true, maxlength: 200 },
@@ -65,6 +87,7 @@ const taskSchema = new Schema<ITask>(
     storyPoints: { type: Number, min: 0, max: 100 },
     labels: [taskLabelSchema],
     checklist: [checklistItemSchema],
+    attachments: [attachmentSchema],
     dueDate: { type: Date },
     order: { type: Number, required: true, default: 0 },
   },
