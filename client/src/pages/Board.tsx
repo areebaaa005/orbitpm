@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDroppable } from '@dnd-kit/core';
 import { AppLayout } from '../components/AppLayout';
 import { TaskDetailModal } from '../components/TaskDetailModal';
+import { TaskListView } from '../components/TaskListView';
 import {
   useProject,
   useColumns,
@@ -33,6 +34,7 @@ import {
   useArchiveProject,
   useMembers,
   useSprints,
+  useEpics,
   useUpdateColumn,
   useDeleteColumn,
   useReorderColumn,
@@ -76,6 +78,9 @@ export default function Board() {
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyMine, setOnlyMine] = useState(false);
   const [onlyOverdue, setOnlyOverdue] = useState(false);
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  const [groupBy, setGroupBy] = useState<'none' | 'assignee' | 'priority' | 'epic'>('none');
+  const { data: epics } = useEpics(projectId);
 
   const activeSprint = sprints?.find((s) => s.status === 'active');
 
@@ -247,6 +252,39 @@ export default function Board() {
           >
             Overdue
           </button>
+
+          <div className="ml-auto flex items-center gap-2">
+            {viewMode === 'list' && (
+              <select
+                className="rounded-lg border border-gray-300 px-2 py-1.5 text-xs"
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
+              >
+                <option value="none">No grouping</option>
+                <option value="assignee">Group by assignee</option>
+                <option value="priority">Group by priority</option>
+                <option value="epic">Group by epic</option>
+              </select>
+            )}
+            <div className="flex rounded-lg border border-gray-300 p-0.5">
+              <button
+                onClick={() => setViewMode('kanban')}
+                className={`rounded px-2.5 py-1 text-xs font-medium ${
+                  viewMode === 'kanban' ? 'bg-orbit-500 text-white' : 'text-ink-600'
+                }`}
+              >
+                Board
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`rounded px-2.5 py-1 text-xs font-medium ${
+                  viewMode === 'list' ? 'bg-orbit-500 text-white' : 'text-ink-600'
+                }`}
+              >
+                List
+              </button>
+            </div>
+          </div>
         </div>
 
         {confirmDelete && (
@@ -320,31 +358,42 @@ export default function Board() {
             </p>
           )}
 
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="flex gap-4">
-              {columns?.map((col) => (
-                <BoardColumn
-                  key={col._id}
-                  projectId={projectId!}
-                  column={col}
-                  tasks={tasksByColumn[col._id] || []}
-                  members={members}
-                  allColumns={columns}
-                  canManage={canManage}
-                  onTaskClick={setOpenTask}
-                />
-              ))}
-            </div>
+          {viewMode === 'kanban' ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCorners}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="flex gap-4">
+                {columns?.map((col) => (
+                  <BoardColumn
+                    key={col._id}
+                    projectId={projectId!}
+                    column={col}
+                    tasks={tasksByColumn[col._id] || []}
+                    members={members}
+                    allColumns={columns}
+                    canManage={canManage}
+                    onTaskClick={setOpenTask}
+                  />
+                ))}
+              </div>
 
-            <DragOverlay>
-              {activeTask && <TaskCard task={activeTask} members={members} dragging />}
-            </DragOverlay>
-          </DndContext>
+              <DragOverlay>
+                {activeTask && <TaskCard task={activeTask} members={members} dragging />}
+              </DragOverlay>
+            </DndContext>
+          ) : (
+            <TaskListView
+              tasks={filteredTasks || []}
+              columns={columns || []}
+              members={members}
+              epics={epics}
+              groupBy={groupBy}
+              onTaskClick={setOpenTask}
+            />
+          )}
         </div>
       </div>
 
