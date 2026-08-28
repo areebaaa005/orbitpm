@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 import {
   useComments,
   useCreateComment,
@@ -9,6 +10,8 @@ import {
   useCreateTask,
   useDeleteTask,
   useMyRole,
+  useUploadAttachment,
+  useDeleteAttachment,
   useMembers,
   useEpics,
   useSprints,
@@ -56,6 +59,28 @@ export function TaskDetailModal({
   const assignToSprint = useAssignTaskToSprint(projectId);
   const canDelete = myRole === 'owner' || myRole === 'admin' || myRole === 'pm';
   const canEdit = myRole !== 'viewer';
+  const uploadAttachment = useUploadAttachment(task._id);
+  const deleteAttachment = useDeleteAttachment(task._id);
+  const { user } = useAuth();
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  function formatFileSize(bytes: number) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError(null);
+    try {
+      await uploadAttachment.mutateAsync(file);
+    } catch (err: any) {
+      setUploadError(err?.response?.data?.error?.message || 'Upload failed');
+    }
+    e.target.value = '';
+  }
 
   const [description, setDescription] = useState(task.description || '');
   const [commentText, setCommentText] = useState('');
@@ -527,6 +552,52 @@ export function TaskDetailModal({
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* Attachments */}
+            <div className="mt-4">
+              <label className="mb-1 block text-xs font-medium text-ink-600">Attachments</label>
+              <div className="flex flex-col gap-1.5">
+                {task.attachments?.map((a) => (
+                  <div
+                    key={a._id}
+                    className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2"
+                  >
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex min-w-0 items-center gap-2 text-sm text-orbit-600 hover:underline"
+                    >
+                      <span className="flex-shrink-0">📎</span>
+                      <span className="truncate">{a.filename}</span>
+                      <span className="flex-shrink-0 text-xs text-ink-400">
+                        {formatFileSize(a.size)}
+                      </span>
+                    </a>
+                    {a.uploadedBy === user?.id && (
+                      <button
+                        onClick={() => deleteAttachment.mutate(a._id)}
+                        className="flex-shrink-0 text-ink-300 hover:text-red-500"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {canEdit && (
+                <label className="mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-1.5 text-xs text-ink-500 hover:border-orbit-400 hover:text-orbit-600">
+                  {uploadAttachment.isPending ? 'Uploading…' : '📎 Attach a file'}
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                    disabled={uploadAttachment.isPending}
+                  />
+                </label>
+              )}
+              {uploadError && <p className="mt-1 text-xs text-red-600">{uploadError}</p>}
             </div>
 
             <div className="mt-4">

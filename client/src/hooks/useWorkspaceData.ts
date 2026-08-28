@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { WorkspaceMembership, Project, Column, Task, Comment, Activity, AppNotification, WorkspaceRole, Epic, Sprint } from '../types';
+import { WorkspaceMembership, Project, Column, Task, Comment, Activity, AppNotification, WorkspaceRole, Epic, Sprint, Attachment } from '../types';
 
 // ---------- Workspaces ----------
 
@@ -385,6 +385,33 @@ export function useWorkspaceSearch(workspaceId: string | undefined, query: strin
       return res.data.data as WorkspaceSearchResult;
     },
     enabled: !!workspaceId && query.trim().length >= 2,
+  });
+}
+
+// ---------- Attachments ----------
+
+export function useUploadAttachment(taskId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await api.post(`/tasks/${taskId}/attachments`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return res.data.data.attachments as Attachment[];
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks'] }),
+  });
+}
+
+export function useDeleteAttachment(taskId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (attachmentId: string) => {
+      await api.delete(`/tasks/${taskId}/attachments/${attachmentId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks'] }),
   });
 }
 

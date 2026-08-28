@@ -53,6 +53,16 @@ export interface ChecklistItem {
   done: boolean;
 }
 
+export interface Attachment {
+  _id: string;
+  url: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
 export interface Task {
   _id: string;
   workspaceId: string;
@@ -69,6 +79,7 @@ export interface Task {
   storyPoints?: number;
   labels: TaskLabel[];
   checklist: ChecklistItem[];
+  attachments: Attachment[];
   dueDate?: string;
   order: number;
   createdAt: string;
