@@ -468,7 +468,7 @@ export function useSprints(projectId: string | undefined) {
 export function useCreateSprint(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { name: string; goal?: string }) => {
+    mutationFn: async (input: { name: string; goal?: string; startDate?: string; endDate?: string }) => {
       const res = await api.post(`/projects/${projectId}/sprints`, input);
       return res.data.data.sprint as Sprint;
     },

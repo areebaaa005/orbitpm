@@ -12,6 +12,7 @@ import {
   useMyRole,
 } from '../hooks/useWorkspaceData';
 import { AppLayout } from '../components/AppLayout';
+import { SprintTimeline } from '../components/SprintTimeline';
 
 const SPRINT_STATUS_STYLES: Record<string, string> = {
   planned: 'bg-gray-100 text-gray-600',
@@ -33,13 +34,22 @@ export default function Backlog() {
   const assignToSprint = useAssignTaskToSprint(projectId);
 
   const [newSprintName, setNewSprintName] = useState('');
+  const [newSprintStart, setNewSprintStart] = useState('');
+  const [newSprintEnd, setNewSprintEnd] = useState('');
+  const [showTimeline, setShowTimeline] = useState(false);
   const canManage = myRole === 'owner' || myRole === 'admin' || myRole === 'pm';
   const activeSprint = sprints?.find((s) => s.status === 'active');
 
   async function handleCreateSprint() {
     if (!newSprintName.trim()) return;
-    await createSprint.mutateAsync({ name: newSprintName.trim() });
+    await createSprint.mutateAsync({
+      name: newSprintName.trim(),
+      startDate: newSprintStart ? new Date(newSprintStart).toISOString() : undefined,
+      endDate: newSprintEnd ? new Date(newSprintEnd).toISOString() : undefined,
+    });
     setNewSprintName('');
+    setNewSprintStart('');
+    setNewSprintEnd('');
   }
 
   return (
@@ -52,7 +62,19 @@ export default function Backlog() {
           <span>/</span>
           <span className="text-ink-900">Backlog</span>
         </div>
-        <h1 className="mt-2 text-2xl font-semibold text-ink-900">Sprints & Backlog</h1>
+        <div className="mt-2 flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-ink-900">Sprints & Backlog</h1>
+          <button onClick={() => setShowTimeline((s) => !s)} className="btn-secondary text-xs">
+            {showTimeline ? 'Hide timeline' : '📅 Roadmap timeline'}
+          </button>
+        </div>
+
+        {showTimeline && sprints && (
+          <div className="mt-4 card p-5">
+            <h2 className="mb-3 text-sm font-semibold text-ink-900">Roadmap</h2>
+            <SprintTimeline sprints={sprints} />
+          </div>
+        )}
 
         <div className="mt-6 card p-5">
           <h2 className="text-sm font-semibold text-ink-900">Sprints</h2>
@@ -112,13 +134,27 @@ export default function Backlog() {
           </div>
 
           {canManage && (
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <input
-                className="input-field text-sm"
+                className="input-field flex-1 text-sm"
                 placeholder="New sprint name (e.g. Sprint 1)"
                 value={newSprintName}
                 onChange={(e) => setNewSprintName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateSprint()}
+              />
+              <input
+                type="date"
+                className="input-field text-sm"
+                value={newSprintStart}
+                onChange={(e) => setNewSprintStart(e.target.value)}
+                title="Start date (optional, for roadmap timeline)"
+              />
+              <input
+                type="date"
+                className="input-field text-sm"
+                value={newSprintEnd}
+                onChange={(e) => setNewSprintEnd(e.target.value)}
+                title="End date (optional, for roadmap timeline)"
               />
               <button onClick={handleCreateSprint} className="btn-primary text-sm">
                 Create
