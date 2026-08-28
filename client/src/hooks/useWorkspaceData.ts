@@ -335,6 +335,59 @@ export function useArchiveProject(workspaceId: string | undefined) {
   });
 }
 
+export function useUpdateColumn(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ columnId, ...updates }: { columnId: string; name?: string; color?: string }) => {
+      const res = await api.patch(`/projects/${projectId}/columns/${columnId}`, updates);
+      return res.data.data.column as Column;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['columns', projectId] }),
+  });
+}
+
+export function useDeleteColumn(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ columnId, moveTasksTo }: { columnId: string; moveTasksTo?: string }) => {
+      await api.delete(`/projects/${projectId}/columns/${columnId}`, {
+        params: moveTasksTo ? { moveTasksTo } : undefined,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['columns', projectId] });
+      qc.invalidateQueries({ queryKey: ['tasks', projectId] });
+    },
+  });
+}
+
+export function useReorderColumn(projectId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ columnId, direction }: { columnId: string; direction: 'up' | 'down' }) => {
+      const res = await api.patch(`/projects/${projectId}/columns/${columnId}/reorder`, { direction });
+      return res.data.data.columns as Column[];
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['columns', projectId] }),
+  });
+}
+
+export interface WorkspaceSearchResult {
+  tasks: (Task & { projectId: { _id: string; name: string; key: string; color: string } })[];
+  projects: Project[];
+}
+
+export function useWorkspaceSearch(workspaceId: string | undefined, query: string) {
+  return useQuery({
+    queryKey: ['workspace-search', workspaceId, query],
+    queryFn: async () => {
+      const res = await api.get(`/workspaces/${workspaceId}/search`, { params: { q: query } });
+      return res.data.data as WorkspaceSearchResult;
+    },
+    enabled: !!workspaceId && query.trim().length >= 2,
+  });
+}
+
 export function useMoveTask(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
