@@ -37,3 +37,16 @@ export const createColumnSchema = z.object({
     color: z.string().trim().optional(),
   }),
 });
+
+export const updateColumnSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(1).max(50).optional(),
+    color: z.string().trim().optional(),
+  }),
+});
+
+export const reorderColumnSchema = z.object({
+  body: z.object({
+    direction: z.enum(['up', 'down']),
+  }),
+});

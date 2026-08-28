@@ -1,4 +1,5 @@
 import { Task } from './task.model';
+import { Column } from '../projects/column.model';
 import { ApiError } from '../../utils/ApiError';
 import { logActivity } from '../activities/activity.service';
 import { createNotification } from '../notifications/notification.service';
@@ -184,6 +185,22 @@ export async function moveTask(
     action: 'task_moved',
     metadata: { fromColumnId: sourceColumnId, toColumnId: targetColumnId },
   });
+
+  // Lightweight built-in automation: notify the reporter when their task
+  // lands in a "Done"-named column, without needing a configurable rules engine.
+  if (!movingWithinSameColumn) {
+    const targetColumn = await Column.findById(targetColumnId).select('name');
+    if (targetColumn && /^done$/i.test(targetColumn.name) && task.reporterId.toString() !== actorId) {
+      await createNotification({
+        userId: task.reporterId.toString(),
+        type: 'task_status_changed',
+        workspaceId: task.workspaceId.toString(),
+        taskId: task._id.toString(),
+        actorId,
+        message: `"${task.title}" was marked done`,
+      });
+    }
+  }
 
   emitToProject(task.projectId.toString(), 'task:moved', task);
   return task;

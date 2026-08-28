@@ -16,6 +16,7 @@ import { projectAnalyticsRouter, workspaceAnalyticsRouter } from './modules/anal
 import { projectAiRouter } from './modules/ai/ai.routes';
 import { projectEpicRouter } from './modules/epics/epic.routes';
 import { projectSprintRouter, taskSprintRouter } from './modules/sprints/sprint.routes';
+import searchRoutes from './modules/search/search.routes';
 
 export function createApp(): Application {
   const app = express();
@@ -52,6 +53,7 @@ export function createApp(): Application {
   app.use('/api/v1/projects/:projectId/epics', projectEpicRouter);
   app.use('/api/v1/projects/:projectId/sprints', projectSprintRouter);
   app.use('/api/v1/tasks/:taskId/sprint', taskSprintRouter);
+  app.use('/api/v1/workspaces/:workspaceId/search', searchRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

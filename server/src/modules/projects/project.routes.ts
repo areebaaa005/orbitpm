@@ -3,7 +3,13 @@ import { requireAuth } from '../../middleware/auth';
 import { requireWorkspaceMember, requireMinRole } from '../../middleware/rbac';
 import { loadProjectWorkspace } from '../../middleware/loadProjectWorkspace';
 import { validate } from '../../middleware/validate';
-import { createProjectSchema, updateProjectSchema, createColumnSchema } from './project.validation';
+import {
+  createProjectSchema,
+  updateProjectSchema,
+  createColumnSchema,
+  updateColumnSchema,
+  reorderColumnSchema,
+} from './project.validation';
 import * as projectController from './project.controller';
 
 // Workspace-scoped routes: /workspaces/:workspaceId/projects
@@ -54,4 +60,27 @@ projectRouter.post(
   requireMinRole('pm'),
   validate(createColumnSchema),
   projectController.createColumn
+);
+projectRouter.patch(
+  '/:projectId/columns/:columnId',
+  loadProjectWorkspace(),
+  requireWorkspaceMember(),
+  requireMinRole('pm'),
+  validate(updateColumnSchema),
+  projectController.updateColumn
+);
+projectRouter.delete(
+  '/:projectId/columns/:columnId',
+  loadProjectWorkspace(),
+  requireWorkspaceMember(),
+  requireMinRole('pm'),
+  projectController.deleteColumn
+);
+projectRouter.patch(
+  '/:projectId/columns/:columnId/reorder',
+  loadProjectWorkspace(),
+  requireWorkspaceMember(),
+  requireMinRole('pm'),
+  validate(reorderColumnSchema),
+  projectController.reorderColumn
 );
