@@ -59,6 +59,8 @@ export function TaskDetailModal({
 
   const [description, setDescription] = useState(task.description || '');
   const [commentText, setCommentText] = useState('');
+  const [mentionedIds, setMentionedIds] = useState<Set<string>>(new Set());
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [tab, setTab] = useState<'comments' | 'activity'>('comments');
   const [subtaskSuggestions, setSubtaskSuggestions] = useState<string[]>([]);
   const [addedSubtasks, setAddedSubtasks] = useState<Set<string>>(new Set());
@@ -88,9 +90,36 @@ export function TaskDetailModal({
   async function handleSubmitComment(e: FormEvent) {
     e.preventDefault();
     if (!commentText.trim()) return;
-    await createComment.mutateAsync(commentText.trim());
+    // Only send mentions whose "@Name" text is still actually present —
+    // protects against a stale mention if the user edited it out afterward.
+    const activeMentions = (members || [])
+      .filter((m) => mentionedIds.has(m.userId._id) && commentText.includes(`@${m.userId.name}`))
+      .map((m) => m.userId._id);
+    await createComment.mutateAsync({ body: commentText.trim(), mentions: activeMentions });
     setCommentText('');
+    setMentionedIds(new Set());
+    setMentionQuery(null);
   }
+
+  function handleCommentChange(value: string) {
+    setCommentText(value);
+    const match = value.match(/@([a-zA-Z]*)$/);
+    setMentionQuery(match ? match[1] : null);
+  }
+
+  function insertMention(userId: string, name: string) {
+    const withoutTrigger = commentText.replace(/@[a-zA-Z]*$/, '');
+    setCommentText(`${withoutTrigger}@${name} `);
+    setMentionedIds((prev) => new Set(prev).add(userId));
+    setMentionQuery(null);
+  }
+
+  const mentionCandidates =
+    mentionQuery !== null
+      ? (members || []).filter((m) =>
+          m.userId.name.toLowerCase().startsWith(mentionQuery.toLowerCase())
+        )
+      : [];
 
   function handlePriorityChange(priority: TaskPriority) {
     updateTask.mutate({ taskId: task._id, priority });
@@ -563,12 +592,12 @@ export function TaskDetailModal({
 
             {tab === 'comments' ? (
               <div className="mt-4">
-                <form onSubmit={handleSubmitComment} className="mb-4 flex gap-2">
+                <form onSubmit={handleSubmitComment} className="relative mb-4 flex gap-2">
                   <input
                     className="input-field"
-                    placeholder="Write a comment…"
+                    placeholder="Write a comment… (@ to mention)"
                     value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
+                    onChange={(e) => handleCommentChange(e.target.value)}
                   />
                   <button
                     type="submit"
@@ -577,6 +606,24 @@ export function TaskDetailModal({
                   >
                     Send
                   </button>
+
+                  {mentionQuery !== null && mentionCandidates.length > 0 && (
+                    <div className="absolute bottom-full left-0 mb-1 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-popover">
+                      {mentionCandidates.map((m) => (
+                        <button
+                          key={m.userId._id}
+                          type="button"
+                          onClick={() => insertMention(m.userId._id, m.userId.name)}
+                          className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-gray-50"
+                        >
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orbit-100 text-[10px] font-semibold text-orbit-700">
+                            {m.userId.name?.[0]?.toUpperCase()}
+                          </span>
+                          {m.userId.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </form>
 
                 <div className="flex flex-col gap-3">

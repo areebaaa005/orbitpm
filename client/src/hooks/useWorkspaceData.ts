@@ -137,8 +137,8 @@ export function useComments(taskId: string | undefined) {
 export function useCreateComment(taskId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (body: string) => {
-      const res = await api.post(`/tasks/${taskId}/comments`, { body });
+    mutationFn: async ({ body, mentions }: { body: string; mentions?: string[] }) => {
+      const res = await api.post(`/tasks/${taskId}/comments`, { body, mentions });
       return res.data.data.comment as Comment;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', taskId] }),
