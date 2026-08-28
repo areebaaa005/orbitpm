@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
 import {
   BarChart,
   Bar,
@@ -28,6 +29,55 @@ export default function Analytics() {
   const { data: project } = useProject(projectId);
   const { data, isLoading } = useProjectAnalytics(projectId);
 
+  function handleExportPdf() {
+    if (!data || !project) return;
+    const doc = new jsPDF();
+    let y = 20;
+
+    doc.setFontSize(18);
+    doc.text('OrbitPM — Project Report', 14, y);
+    y += 8;
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`${project.name} (${project.key})`, 14, y);
+    y += 6;
+    doc.text(`Generated ${new Date().toLocaleDateString()}`, 14, y);
+    y += 12;
+
+    doc.setTextColor(20);
+    doc.setFontSize(13);
+    doc.text('Summary', 14, y);
+    y += 7;
+    doc.setFontSize(10);
+    doc.setTextColor(60);
+    const rows = [
+      ['Total tasks', String(data.total)],
+      ['Completed', String(data.completed)],
+      ['Open', String(data.open)],
+      ['Overdue', String(data.overdue)],
+    ];
+    for (const [label, value] of rows) {
+      doc.text(`${label}:`, 14, y);
+      doc.text(value, 60, y);
+      y += 6;
+    }
+
+    y += 6;
+    doc.setFontSize(13);
+    doc.setTextColor(20);
+    doc.text('Priority distribution', 14, y);
+    y += 7;
+    doc.setFontSize(10);
+    doc.setTextColor(60);
+    for (const [priority, count] of Object.entries(data.priorityDistribution)) {
+      doc.text(`${priority}:`, 14, y);
+      doc.text(String(count), 60, y);
+      y += 6;
+    }
+
+    doc.save(`${project.key}-report.pdf`);
+  }
+
   const priorityData = data
     ? Object.entries(data.priorityDistribution).map(([priority, count]) => ({
         priority,
@@ -50,7 +100,10 @@ export default function Analytics() {
             {project?.name}
           </Link>
           <span className="text-ink-400">/</span>
-          <h1 className="text-lg font-semibold text-ink-900">Analytics</h1>
+          <h1 className="flex-1 text-lg font-semibold text-ink-900">Analytics</h1>
+          <button onClick={handleExportPdf} disabled={!data} className="btn-secondary text-xs">
+            📄 Export PDF
+          </button>
         </header>
 
         <div className="flex-1 overflow-y-auto px-8 py-6">
