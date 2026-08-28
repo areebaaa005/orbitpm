@@ -43,7 +43,7 @@ export default function Analytics() {
     : [];
 
   return (
-    <AppLayout>
+    <AppLayout workspaceId={project?.workspaceId}>
       <div className="flex h-full flex-col">
         <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-8 py-5">
           <Link to={`/projects/${projectId}`} className="text-sm text-ink-400 hover:text-ink-600">

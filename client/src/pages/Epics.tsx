@@ -33,7 +33,7 @@ export default function Epics() {
   }
 
   return (
-    <AppLayout>
+    <AppLayout workspaceId={project?.workspaceId}>
       <div className="mx-auto max-w-3xl px-8 py-10">
         <div className="flex items-center gap-2 text-sm text-ink-400">
           <Link to={`/projects/${projectId}`} className="hover:text-ink-600">

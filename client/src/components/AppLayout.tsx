@@ -3,9 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { OrbitMark } from './OrbitMark';
 import { NotificationBell } from './NotificationBell';
 import { EditProfileModal } from './EditProfileModal';
+import { CommandPalette } from './CommandPalette';
 import { useAuth } from '../context/AuthContext';
 
-export function AppLayout({ children }: { children: ReactNode }) {
+export function AppLayout({
+  children,
+  workspaceId,
+}: {
+  children: ReactNode;
+  workspaceId?: string;
+}) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -94,12 +101,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
           >
             ☰
           </button>
+          <span className="hidden items-center gap-1 text-xs text-ink-400 md:flex">
+            Press <kbd className="rounded border border-gray-200 px-1.5 py-0.5 font-sans text-[10px]">Ctrl K</kbd> to search
+          </span>
           <NotificationBell />
         </div>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
       {editProfileOpen && <EditProfileModal onClose={() => setEditProfileOpen(false)} />}
+      <CommandPalette workspaceId={workspaceId} />
     </div>
   );
 }
