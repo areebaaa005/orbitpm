@@ -16,11 +16,11 @@ import { useAuth } from '../context/AuthContext';
 const ASSIGNABLE_ROLES: WorkspaceRole[] = ['admin', 'pm', 'member', 'viewer'];
 
 const ROLE_STYLES: Record<WorkspaceRole, string> = {
-  owner: 'bg-amber-50 text-amber-700',
-  admin: 'bg-orbit-50 text-orbit-700',
-  pm: 'bg-blue-50 text-blue-700',
-  member: 'bg-gray-100 text-gray-700',
-  viewer: 'bg-gray-100 text-gray-500',
+  owner: 'bg-amber-500/10 text-amber-400',
+  admin: 'bg-orbit-500/10 text-orbit-300',
+  pm: 'bg-blue-500/10 text-blue-400',
+  member: 'bg-space-800 text-gray-700',
+  viewer: 'bg-space-800 text-gray-500',
 };
 
 export default function Members() {
@@ -61,23 +61,23 @@ export default function Members() {
   return (
     <AppLayout workspaceId={workspaceId}>
       <div className="mx-auto max-w-3xl px-8 py-10">
-        <Link to="/" className="text-sm text-ink-400 hover:text-ink-600">
+        <Link to="/" className="text-sm text-gray-500 hover:text-gray-400">
           ← Workspaces
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-ink-900">Members</h1>
-        <p className="mt-1 text-sm text-ink-600">
+        <h1 className="mt-2 text-2xl font-semibold text-gray-100">Members</h1>
+        <p className="mt-1 text-sm text-gray-400">
           Manage who has access to this workspace and what they can do.
         </p>
 
         {!canManage && (
-          <p className="mt-4 rounded-lg bg-gray-100 px-3 py-2 text-sm text-ink-600">
+          <p className="mt-4 rounded-lg bg-space-800 px-3 py-2 text-sm text-gray-400">
             You're viewing this page with read access. Only Owners and Admins can invite or manage members.
           </p>
         )}
 
         {canManage && (
           <div className="card mt-6 p-5">
-            <h2 className="text-sm font-semibold text-ink-900">Invite a member</h2>
+            <h2 className="text-sm font-semibold text-gray-100">Invite a member</h2>
             <form onSubmit={handleInvite} className="mt-3 flex flex-col gap-3 sm:flex-row">
               <input
                 type="email"
@@ -102,20 +102,20 @@ export default function Members() {
                 {inviteMember.isPending ? 'Sending…' : 'Invite'}
               </button>
             </form>
-            {inviteError && <p className="mt-2 text-sm text-red-600">{inviteError}</p>}
+            {inviteError && <p className="mt-2 text-sm text-red-400">{inviteError}</p>}
             {inviteResult && (
-              <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2.5">
+              <div className="mt-3 rounded-lg bg-emerald-500/10 px-3 py-2.5">
                 {inviteResult.emailSent ? (
-                  <p className="text-sm text-emerald-800">
+                  <p className="text-sm text-emerald-400">
                     ✓ Invitation email sent — they'll get a link to join with the{' '}
                     <strong>{inviteRole}</strong> role.
                   </p>
                 ) : (
                   <>
-                    <p className="text-sm text-amber-800">
+                    <p className="text-sm text-amber-400">
                       Invitation created, but email delivery isn't configured yet.
                     </p>
-                    <p className="mt-1 text-xs text-ink-500">
+                    <p className="mt-1 text-xs text-gray-500">
                       Share this link with your teammate instead:{' '}
                       <a href={inviteResult.link} className="break-all text-orbit-600 underline">
                         {inviteResult.link}
@@ -128,8 +128,8 @@ export default function Members() {
           </div>
         )}
 
-        <div className="card mt-6 divide-y divide-gray-100">
-          {isLoading && <p className="px-5 py-4 text-sm text-ink-400">Loading members…</p>}
+        <div className="card mt-6 divide-y divide-space-800">
+          {isLoading && <p className="px-5 py-4 text-sm text-gray-500">Loading members…</p>}
           <AnimatePresence>
             {members?.map((m) => (
               <motion.div
@@ -140,14 +140,14 @@ export default function Members() {
                 className="flex items-center justify-between gap-3 px-5 py-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-orbit-100 text-sm font-semibold text-orbit-700">
+                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-orbit-100 text-sm font-semibold text-orbit-300">
                     {m.userId.name?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-ink-900">
+                    <p className="truncate text-sm font-medium text-gray-100">
                       {m.userId.name} {m.userId._id === user?.id && '(you)'}
                     </p>
-                    <p className="truncate text-xs text-ink-500">{m.userId.email}</p>
+                    <p className="truncate text-xs text-gray-500">{m.userId.email}</p>
                   </div>
                 </div>
 
@@ -180,7 +180,7 @@ export default function Members() {
                   {canManage && m.role !== 'owner' && (
                     <button
                       onClick={() => removeMember.mutate(m.userId._id)}
-                      className="rounded-full p-1.5 text-ink-400 hover:bg-red-50 hover:text-red-600"
+                      className="rounded-full p-1.5 text-gray-500 hover:bg-red-500/10 hover:text-red-400"
                       aria-label="Remove member"
                     >
                       ✕
@@ -214,8 +214,8 @@ function WorkspaceSettings({
 
   return (
     <div className="card mt-6 p-5">
-      <h2 className="text-sm font-semibold text-ink-900">Workspace settings</h2>
-      <p className="mt-1 text-xs text-ink-500">Only visible to the workspace Owner.</p>
+      <h2 className="text-sm font-semibold text-gray-100">Workspace settings</h2>
+      <p className="mt-1 text-xs text-gray-500">Only visible to the workspace Owner.</p>
       <div className="mt-3 flex gap-2">
         <input
           className="input-field flex-1"

@@ -46,12 +46,12 @@ export default function Login() {
         </div>
 
         <div className="card p-8">
-          <h1 className="text-xl font-semibold text-ink-900">Welcome back</h1>
-          <p className="mt-1 text-sm text-ink-600">Sign in to keep your projects moving.</p>
+          <h1 className="text-xl font-semibold text-gray-100">Welcome back</h1>
+          <p className="mt-1 text-sm text-gray-400">Sign in to keep your projects moving.</p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-900">Email</label>
+              <label className="mb-1 block text-sm font-medium text-gray-100">Email</label>
               <input
                 type="email"
                 required
@@ -62,7 +62,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-ink-900">Password</label>
+              <label className="mb-1 block text-sm font-medium text-gray-100">Password</label>
               <input
                 type="password"
                 required
@@ -74,7 +74,7 @@ export default function Login() {
             </div>
 
             {error && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+              <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>
             )}
 
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full">

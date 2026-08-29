@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-space-950 font-body text-ink-900 antialiased;
+    @apply bg-space-950 font-body text-gray-100 antialiased;
   }
   h1, h2, h3, h4 {
     @apply font-display;
@@ -19,12 +19,12 @@
     @apply inline-flex items-center justify-center rounded-lg bg-orbit-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orbit-600 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-ink-900 transition hover:bg-gray-50 disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-lg border border-space-600 bg-space-800 px-4 py-2 text-sm font-semibold text-gray-100 transition hover:bg-space-700 disabled:opacity-50;
   }
   .input-field {
-    @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-orbit-500 focus:ring-1 focus:ring-orbit-500;
+    @apply w-full rounded-lg border border-space-600 bg-space-800 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:border-orbit-500 focus:ring-1 focus:ring-orbit-500;
   }
   .card {
-    @apply rounded-xl2 border border-gray-200 bg-white shadow-card;
+    @apply rounded-xl2 border border-space-700 bg-space-900 shadow-card;
   }
 }

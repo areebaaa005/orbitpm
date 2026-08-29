@@ -27,12 +27,12 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="mx-auto max-w-5xl px-8 py-10">
-        <h1 className="text-2xl font-semibold text-ink-900">Your workspaces</h1>
-        <p className="mt-1 text-sm text-ink-600">
+        <h1 className="text-2xl font-semibold text-gray-100">Your workspaces</h1>
+        <p className="mt-1 text-sm text-gray-400">
           A workspace is where your team, projects, and boards live together.
         </p>
 
-        {isLoading && <p className="mt-6 text-sm text-ink-400">Loading…</p>}
+        {isLoading && <p className="mt-6 text-sm text-gray-500">Loading…</p>}
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {workspaces?.map((m) => (
@@ -43,8 +43,8 @@ export default function Dashboard() {
                 activeWorkspaceId === m.workspace._id ? 'border-orbit-500 ring-1 ring-orbit-500' : ''
               }`}
             >
-              <span className="font-medium text-ink-900">{m.workspace.name}</span>
-              <span className="mt-1 rounded-full bg-orbit-50 px-2 py-0.5 text-xs font-medium capitalize text-orbit-700">
+              <span className="font-medium text-gray-100">{m.workspace.name}</span>
+              <span className="mt-1 rounded-full bg-orbit-500/10 px-2 py-0.5 text-xs font-medium capitalize text-orbit-300">
                 {m.role}
               </span>
             </button>
@@ -99,7 +99,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
   return (
     <div className="mt-10">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-ink-900">Projects</h2>
+        <h2 className="text-lg font-semibold text-gray-100">Projects</h2>
         <button onClick={() => setShowForm((s) => !s)} className="btn-secondary text-xs">
           {showForm ? 'Cancel' : '+ New project'}
         </button>
@@ -108,7 +108,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
       {showForm && (
         <div className="card mt-3 flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
           <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium text-ink-600">Project name</label>
+            <label className="mb-1 block text-xs font-medium text-gray-400">Project name</label>
             <input
               className="input-field"
               placeholder="Website Redesign"
@@ -117,7 +117,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
             />
           </div>
           <div className="w-32">
-            <label className="mb-1 block text-xs font-medium text-ink-600">Key</label>
+            <label className="mb-1 block text-xs font-medium text-gray-400">Key</label>
             <input
               className="input-field uppercase"
               placeholder="WEB"
@@ -134,7 +134,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
 
       {showForm && (
         <div className="mt-2 flex items-center gap-2">
-          <span className="text-xs font-medium text-ink-600">Color:</span>
+          <span className="text-xs font-medium text-gray-400">Color:</span>
           {PROJECT_COLORS.map((c) => (
             <button
               key={c}
@@ -147,10 +147,10 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
         </div>
       )}
 
-      {isLoading && <p className="mt-4 text-sm text-ink-400">Loading projects…</p>}
+      {isLoading && <p className="mt-4 text-sm text-gray-500">Loading projects…</p>}
 
       {projects && projects.length === 0 && !showForm && (
-        <p className="mt-4 text-sm text-ink-400">
+        <p className="mt-4 text-sm text-gray-500">
           No projects yet. Create one to start building your board.
         </p>
       )}
@@ -171,7 +171,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
             >
               {p.key}
             </span>
-            <span className="mt-2 font-medium text-ink-900">{p.name}</span>
+            <span className="mt-2 font-medium text-gray-100">{p.name}</span>
           </motion.button>
         ))}
       </div>

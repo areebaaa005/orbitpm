@@ -35,15 +35,15 @@ export default function Epics() {
   return (
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
       <div className="mx-auto max-w-3xl px-8 py-10">
-        <div className="flex items-center gap-2 text-sm text-ink-400">
-          <Link to={`/projects/${projectId}`} className="hover:text-ink-600">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Link to={`/projects/${projectId}`} className="hover:text-gray-400">
             {project?.name}
           </Link>
           <span>/</span>
-          <span className="text-ink-900">Epics</span>
+          <span className="text-gray-100">Epics</span>
         </div>
-        <h1 className="mt-2 text-2xl font-semibold text-ink-900">Epics</h1>
-        <p className="mt-1 text-sm text-ink-600">
+        <h1 className="mt-2 text-2xl font-semibold text-gray-100">Epics</h1>
+        <p className="mt-1 text-sm text-gray-400">
           Group related tasks under a larger initiative or feature.
         </p>
 
@@ -87,8 +87,8 @@ export default function Epics() {
                   <div className="flex items-center gap-2">
                     <span className="h-3 w-3 rounded-full" style={{ backgroundColor: epic.color }} />
                     <div>
-                      <p className="text-sm font-medium text-ink-900">{epic.name}</p>
-                      <p className="text-xs text-ink-500">{taskCount} task{taskCount !== 1 ? 's' : ''}</p>
+                      <p className="text-sm font-medium text-gray-100">{epic.name}</p>
+                      <p className="text-xs text-gray-500">{taskCount} task{taskCount !== 1 ? 's' : ''}</p>
                     </div>
                   </div>
                   {canManage && (
@@ -105,7 +105,7 @@ export default function Epics() {
             })}
           </AnimatePresence>
           {epics?.length === 0 && (
-            <p className="text-sm text-ink-400">No epics yet. Create one above to get started.</p>
+            <p className="text-sm text-gray-500">No epics yet. Create one above to get started.</p>
           )}
         </div>
       </div>

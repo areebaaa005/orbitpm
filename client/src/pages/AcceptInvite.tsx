@@ -39,7 +39,7 @@ export default function AcceptInvite() {
   if (!token) {
     return (
       <CenteredCard>
-        <p className="text-sm text-ink-600">This invitation link is missing its token.</p>
+        <p className="text-sm text-gray-400">This invitation link is missing its token.</p>
       </CenteredCard>
     );
   }
@@ -47,7 +47,7 @@ export default function AcceptInvite() {
   if (authLoading) {
     return (
       <CenteredCard>
-        <p className="text-sm text-ink-600">Loading…</p>
+        <p className="text-sm text-gray-400">Loading…</p>
       </CenteredCard>
     );
   }
@@ -55,8 +55,8 @@ export default function AcceptInvite() {
   if (!user) {
     return (
       <CenteredCard>
-        <h1 className="text-lg font-semibold text-ink-900">You've been invited to OrbitPM</h1>
-        <p className="mt-2 text-sm text-ink-600">
+        <h1 className="text-lg font-semibold text-gray-100">You've been invited to OrbitPM</h1>
+        <p className="mt-2 text-sm text-gray-400">
           Log in or create an account first — we'll add you to the workspace automatically right after.
         </p>
         <div className="mt-5 flex gap-2">
@@ -75,17 +75,17 @@ export default function AcceptInvite() {
     <CenteredCard>
       {status === 'success' ? (
         <>
-          <h1 className="text-lg font-semibold text-emerald-700">You're in! 🎉</h1>
-          <p className="mt-2 text-sm text-ink-600">Redirecting you to your workspaces…</p>
+          <h1 className="text-lg font-semibold text-emerald-400">You're in! 🎉</h1>
+          <p className="mt-2 text-sm text-gray-400">Redirecting you to your workspaces…</p>
         </>
       ) : (
         <>
-          <h1 className="text-lg font-semibold text-ink-900">Join this workspace?</h1>
-          <p className="mt-2 text-sm text-ink-600">
+          <h1 className="text-lg font-semibold text-gray-100">Join this workspace?</h1>
+          <p className="mt-2 text-sm text-gray-400">
             Signed in as <strong>{user.email}</strong>. Accepting will add this workspace to your list.
           </p>
           {status === 'error' && (
-            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errorMessage}</p>
+            <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{errorMessage}</p>
           )}
           <button
             onClick={handleAccept}

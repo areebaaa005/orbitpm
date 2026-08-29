@@ -42,7 +42,7 @@ export function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-full p-2 text-ink-400 hover:bg-gray-100 hover:text-ink-900"
+        className="relative rounded-full p-2 text-gray-500 hover:bg-space-800 hover:text-gray-100"
         aria-label="Notifications"
       >
         <span className="text-lg">🔔</span>
@@ -60,14 +60,14 @@ export function NotificationBell() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="absolute right-0 z-40 mt-2 w-80 rounded-xl2 border border-gray-200 bg-white shadow-popover"
+            className="absolute right-0 z-40 mt-2 w-80 rounded-xl2 border border-space-700 bg-space-900 shadow-popover"
           >
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <span className="text-sm font-semibold text-ink-900">Notifications</span>
+          <div className="flex items-center justify-between border-b border-space-800 px-4 py-3">
+            <span className="text-sm font-semibold text-gray-100">Notifications</span>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllRead.mutate()}
-                className="text-xs font-medium text-orbit-600 hover:text-orbit-700"
+                className="text-xs font-medium text-orbit-600 hover:text-orbit-300"
               >
                 Mark all read
               </button>
@@ -75,14 +75,14 @@ export function NotificationBell() {
           </div>
           <div className="max-h-80 overflow-y-auto">
             {notifications?.length === 0 && (
-              <p className="px-4 py-6 text-center text-sm text-ink-400">You're all caught up.</p>
+              <p className="px-4 py-6 text-center text-sm text-gray-500">You're all caught up.</p>
             )}
             {notifications?.map((n) => (
               <button
                 key={n._id}
                 onClick={() => !n.readAt && markRead.mutate(n._id)}
-                className={`block w-full border-b border-gray-50 px-4 py-3 text-left text-sm transition hover:bg-gray-50 ${
-                  n.readAt ? 'text-ink-400' : 'font-medium text-ink-900'
+                className={`block w-full border-b border-gray-50 px-4 py-3 text-left text-sm transition hover:bg-space-800 ${
+                  n.readAt ? 'text-gray-500' : 'font-medium text-gray-100'
                 }`}
               >
                 {n.message}

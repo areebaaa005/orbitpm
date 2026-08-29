@@ -11,7 +11,7 @@ export function SprintTimeline({ sprints }: { sprints: Sprint[] }) {
 
   if (withDates.length === 0) {
     return (
-      <p className="rounded-lg bg-gray-50 px-4 py-6 text-center text-sm text-ink-400">
+      <p className="rounded-lg bg-space-950 px-4 py-6 text-center text-sm text-gray-500">
         No sprints with start/end dates yet. Set dates when creating a sprint, or start one to
         begin tracking it on the timeline.
       </p>
@@ -37,10 +37,10 @@ export function SprintTimeline({ sprints }: { sprints: Sprint[] }) {
         const width = Math.max(pct(s.endDate!) - left, 3);
         return (
           <div key={s._id} className="flex items-center gap-3">
-            <span className="w-28 flex-shrink-0 truncate text-xs font-medium text-ink-700">
+            <span className="w-28 flex-shrink-0 truncate text-xs font-medium text-gray-300">
               {s.name}
             </span>
-            <div className="relative h-6 flex-1 rounded bg-gray-50">
+            <div className="relative h-6 flex-1 rounded bg-space-950">
               <div
                 className="absolute top-0 h-full rounded text-[10px] font-medium leading-6 text-white"
                 style={{

@@ -95,19 +95,19 @@ export default function Analytics() {
   return (
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
       <div className="flex h-full flex-col">
-        <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-8 py-5">
-          <Link to={`/projects/${projectId}`} className="text-sm text-ink-400 hover:text-ink-600">
+        <header className="flex items-center gap-3 border-b border-space-700 bg-space-900 px-8 py-5">
+          <Link to={`/projects/${projectId}`} className="text-sm text-gray-500 hover:text-gray-400">
             {project?.name}
           </Link>
-          <span className="text-ink-400">/</span>
-          <h1 className="flex-1 text-lg font-semibold text-ink-900">Analytics</h1>
+          <span className="text-gray-500">/</span>
+          <h1 className="flex-1 text-lg font-semibold text-gray-100">Analytics</h1>
           <button onClick={handleExportPdf} disabled={!data} className="btn-secondary text-xs">
             📄 Export PDF
           </button>
         </header>
 
         <div className="flex-1 overflow-y-auto px-8 py-6">
-          {isLoading && <p className="text-sm text-ink-400">Loading analytics…</p>}
+          {isLoading && <p className="text-sm text-gray-500">Loading analytics…</p>}
 
           {data && (
             <>
@@ -115,12 +115,12 @@ export default function Analytics() {
                 <StatCard label="Total tasks" value={data.total} />
                 <StatCard label="Completed" value={data.completed} accent="text-emerald-600" />
                 <StatCard label="Open" value={data.open} accent="text-blue-600" />
-                <StatCard label="Overdue" value={data.overdue} accent="text-red-600" />
+                <StatCard label="Overdue" value={data.overdue} accent="text-red-400" />
               </div>
 
               <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="card p-5">
-                  <h3 className="mb-4 text-sm font-semibold text-ink-900">
+                  <h3 className="mb-4 text-sm font-semibold text-gray-100">
                     Priority distribution
                   </h3>
                   {priorityData.every((p) => p.count === 0) ? (
@@ -143,7 +143,7 @@ export default function Analytics() {
                 </div>
 
                 <div className="card p-5">
-                  <h3 className="mb-4 text-sm font-semibold text-ink-900">
+                  <h3 className="mb-4 text-sm font-semibold text-gray-100">
                     Completed vs open
                   </h3>
                   {data.total === 0 ? (
@@ -170,7 +170,7 @@ export default function Analytics() {
                 </div>
 
                 <div className="card p-5 lg:col-span-2">
-                  <h3 className="mb-4 text-sm font-semibold text-ink-900">
+                  <h3 className="mb-4 text-sm font-semibold text-gray-100">
                     Completions — last 14 days
                   </h3>
                   {data.completionTrend.length === 0 ? (
@@ -205,7 +205,7 @@ export default function Analytics() {
 function StatCard({
   label,
   value,
-  accent = 'text-ink-900',
+  accent = 'text-gray-100',
 }: {
   label: string;
   value: number;
@@ -213,7 +213,7 @@ function StatCard({
 }) {
   return (
     <div className="card p-4">
-      <p className="text-xs font-medium text-ink-600">{label}</p>
+      <p className="text-xs font-medium text-gray-400">{label}</p>
       <p className={`mt-1 text-2xl font-semibold ${accent}`}>{value}</p>
     </div>
   );
@@ -221,7 +221,7 @@ function StatCard({
 
 function EmptyChart({ message = 'Not enough data yet.' }: { message?: string }) {
   return (
-    <div className="flex h-[220px] items-center justify-center text-sm text-ink-400">
+    <div className="flex h-[220px] items-center justify-center text-sm text-gray-500">
       {message}
     </div>
   );

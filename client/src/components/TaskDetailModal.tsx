@@ -233,10 +233,10 @@ export function TaskDetailModal({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 40, opacity: 0 }}
           transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-          className="h-full w-full max-w-lg overflow-y-auto bg-white shadow-popover"
+          className="h-full w-full max-w-lg overflow-y-auto bg-space-900 shadow-popover"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-space-700 px-6 py-4">
             <span
               className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-semibold text-white"
               style={{ backgroundColor: currentType.color }}
@@ -247,7 +247,7 @@ export function TaskDetailModal({
               {canDelete && (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="rounded-full p-1.5 text-ink-400 hover:bg-red-50 hover:text-red-600"
+                  className="rounded-full p-1.5 text-gray-500 hover:bg-red-500/10 hover:text-red-400"
                   aria-label="Delete task"
                 >
                   🗑
@@ -255,7 +255,7 @@ export function TaskDetailModal({
               )}
               <button
                 onClick={onClose}
-                className="rounded-full p-1 text-ink-400 hover:bg-gray-100 hover:text-ink-900"
+                className="rounded-full p-1 text-gray-500 hover:bg-space-800 hover:text-gray-100"
                 aria-label="Close"
               >
                 ✕
@@ -264,8 +264,8 @@ export function TaskDetailModal({
           </div>
 
           {confirmDelete && (
-            <div className="border-b border-red-100 bg-red-50 px-6 py-3">
-              <p className="text-sm text-red-800">Delete this task permanently?</p>
+            <div className="border-b border-red-500/30 bg-red-500/10 px-6 py-3">
+              <p className="text-sm text-red-400">Delete this task permanently?</p>
               <div className="mt-2 flex gap-2">
                 <button
                   onClick={handleDelete}
@@ -276,7 +276,7 @@ export function TaskDetailModal({
                 </button>
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-white"
+                  className="rounded-lg border border-space-600 px-3 py-1.5 text-xs font-semibold text-gray-400 hover:bg-space-900"
                 >
                   Cancel
                 </button>
@@ -285,12 +285,12 @@ export function TaskDetailModal({
           )}
 
           <div className="px-6 py-5">
-            <h2 className="text-lg font-semibold text-ink-900">{task.title}</h2>
+            <h2 className="text-lg font-semibold text-gray-100">{task.title}</h2>
 
             {/* Meta grid: type, priority, story points, due date */}
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-ink-600">Type</label>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Type</label>
                 <select
                   disabled={!canEdit}
                   className="input-field text-sm"
@@ -305,7 +305,7 @@ export function TaskDetailModal({
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-ink-600">Story points</label>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Story points</label>
                 <input
                   type="number"
                   min={0}
@@ -318,17 +318,17 @@ export function TaskDetailModal({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-ink-600">Due date</label>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Due date</label>
                 <input
                   type="date"
                   disabled={!canEdit}
-                  className={`input-field text-sm ${isOverdue ? 'text-red-600' : ''}`}
+                  className={`input-field text-sm ${isOverdue ? 'text-red-400' : ''}`}
                   defaultValue={task.dueDate ? task.dueDate.slice(0, 10) : ''}
                   onChange={(e) => handleDueDateChange(e.target.value)}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-ink-600">Epic</label>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Epic</label>
                 <select
                   disabled={!canEdit}
                   className="input-field text-sm"
@@ -347,7 +347,7 @@ export function TaskDetailModal({
 
             {sprints && sprints.length > 0 && (
               <div className="mt-3">
-                <label className="mb-1 block text-xs font-medium text-ink-600">Sprint</label>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Sprint</label>
                 <select
                   disabled={!canEdit}
                   className="input-field text-sm"
@@ -365,7 +365,7 @@ export function TaskDetailModal({
             )}
 
             <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-ink-600">Priority</label>
+              <label className="mb-1 block text-xs font-medium text-gray-400">Priority</label>
               <div className="flex gap-1.5">
                 {PRIORITIES.map((p) => (
                   <button
@@ -375,7 +375,7 @@ export function TaskDetailModal({
                     className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
                       task.priority === p
                         ? 'bg-orbit-500 text-white'
-                        : 'bg-gray-100 text-ink-600 hover:bg-gray-200'
+                        : 'bg-space-800 text-gray-400 hover:bg-space-700'
                     }`}
                   >
                     {p}
@@ -386,12 +386,12 @@ export function TaskDetailModal({
 
             {/* Assignees */}
             <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-ink-600">Assignees</label>
+              <label className="mb-1 block text-xs font-medium text-gray-400">Assignees</label>
               <div className="flex flex-wrap items-center gap-1.5">
                 {assignedMembers.map((m) => (
                   <span
                     key={m.userId._id}
-                    className="flex items-center gap-1 rounded-full bg-orbit-50 py-1 pl-1 pr-2 text-xs font-medium text-orbit-700"
+                    className="flex items-center gap-1 rounded-full bg-orbit-500/10 py-1 pl-1 pr-2 text-xs font-medium text-orbit-300"
                   >
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orbit-500 text-[10px] font-semibold text-white">
                       {m.userId.name?.[0]?.toUpperCase()}
@@ -402,18 +402,18 @@ export function TaskDetailModal({
                 {canEdit && (
                   <button
                     onClick={() => setShowAssigneePicker((s) => !s)}
-                    className="rounded-full border border-dashed border-gray-300 px-2 py-1 text-xs text-ink-500 hover:border-orbit-400 hover:text-orbit-600"
+                    className="rounded-full border border-dashed border-space-600 px-2 py-1 text-xs text-gray-500 hover:border-orbit-400 hover:text-orbit-600"
                   >
                     + Add
                   </button>
                 )}
               </div>
               {showAssigneePicker && (
-                <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-gray-200 p-1.5">
+                <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-space-700 p-1.5">
                   {members?.map((m) => (
                     <label
                       key={m.userId._id}
-                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-gray-50"
+                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-space-800"
                     >
                       <input
                         type="checkbox"
@@ -429,7 +429,7 @@ export function TaskDetailModal({
 
             {/* Labels */}
             <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-ink-600">Labels</label>
+              <label className="mb-1 block text-xs font-medium text-gray-400">Labels</label>
               <div className="flex flex-wrap items-center gap-1.5">
                 {task.labels.map((l) => (
                   <span
@@ -451,14 +451,14 @@ export function TaskDetailModal({
                 {canEdit && (
                   <button
                     onClick={() => setShowLabelPicker((s) => !s)}
-                    className="rounded-full border border-dashed border-gray-300 px-2 py-1 text-xs text-ink-500 hover:border-orbit-400 hover:text-orbit-600"
+                    className="rounded-full border border-dashed border-space-600 px-2 py-1 text-xs text-gray-500 hover:border-orbit-400 hover:text-orbit-600"
                   >
                     + Add
                   </button>
                 )}
               </div>
               {showLabelPicker && (
-                <div className="mt-2 flex items-center gap-2 rounded-lg border border-gray-200 p-2">
+                <div className="mt-2 flex items-center gap-2 rounded-lg border border-space-700 p-2">
                   <input
                     className="input-field flex-1 text-sm"
                     placeholder="Label name"
@@ -484,7 +484,7 @@ export function TaskDetailModal({
             </div>
 
             <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-ink-600">Description</label>
+              <label className="mb-1 block text-xs font-medium text-gray-400">Description</label>
               <textarea
                 disabled={!canEdit}
                 className="input-field resize-none"
@@ -499,15 +499,15 @@ export function TaskDetailModal({
             {/* Checklist */}
             <div className="mt-4">
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-xs font-medium text-ink-600">Checklist</label>
+                <label className="text-xs font-medium text-gray-400">Checklist</label>
                 {task.checklist.length > 0 && (
-                  <span className="text-xs text-ink-400">
+                  <span className="text-xs text-gray-500">
                     {checklistDone}/{task.checklist.length}
                   </span>
                 )}
               </div>
               {task.checklist.length > 0 && (
-                <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-space-800">
                   <div
                     className="h-full bg-emerald-500 transition-all"
                     style={{
@@ -518,13 +518,13 @@ export function TaskDetailModal({
               )}
               <div className="flex flex-col gap-1">
                 {task.checklist.map((item) => (
-                  <div key={item._id} className="flex items-center gap-2 rounded px-1 py-1 hover:bg-gray-50">
+                  <div key={item._id} className="flex items-center gap-2 rounded px-1 py-1 hover:bg-space-800">
                     <input
                       type="checkbox"
                       checked={item.done}
                       onChange={() => toggleChecklistItem(item._id)}
                     />
-                    <span className={`flex-1 text-sm ${item.done ? 'text-ink-400 line-through' : 'text-ink-900'}`}>
+                    <span className={`flex-1 text-sm ${item.done ? 'text-gray-500 line-through' : 'text-gray-100'}`}>
                       {item.text}
                     </span>
                     {canEdit && (
@@ -556,12 +556,12 @@ export function TaskDetailModal({
 
             {/* Attachments */}
             <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-ink-600">Attachments</label>
+              <label className="mb-1 block text-xs font-medium text-gray-400">Attachments</label>
               <div className="flex flex-col gap-1.5">
                 {task.attachments?.map((a) => (
                   <div
                     key={a._id}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2"
+                    className="flex items-center justify-between gap-2 rounded-lg border border-space-700 px-3 py-2"
                   >
                     <a
                       href={a.url}
@@ -571,7 +571,7 @@ export function TaskDetailModal({
                     >
                       <span className="flex-shrink-0">📎</span>
                       <span className="truncate">{a.filename}</span>
-                      <span className="flex-shrink-0 text-xs text-ink-400">
+                      <span className="flex-shrink-0 text-xs text-gray-500">
                         {formatFileSize(a.size)}
                       </span>
                     </a>
@@ -587,7 +587,7 @@ export function TaskDetailModal({
                 ))}
               </div>
               {canEdit && (
-                <label className="mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-1.5 text-xs text-ink-500 hover:border-orbit-400 hover:text-orbit-600">
+                <label className="mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-space-600 px-3 py-1.5 text-xs text-gray-500 hover:border-orbit-400 hover:text-orbit-600">
                   {uploadAttachment.isPending ? 'Uploading…' : '📎 Attach a file'}
                   <input
                     type="file"
@@ -597,7 +597,7 @@ export function TaskDetailModal({
                   />
                 </label>
               )}
-              {uploadError && <p className="mt-1 text-xs text-red-600">{uploadError}</p>}
+              {uploadError && <p className="mt-1 text-xs text-red-400">{uploadError}</p>}
             </div>
 
             <div className="mt-4">
@@ -610,24 +610,24 @@ export function TaskDetailModal({
               </button>
 
               {suggestSubtasks.isError && (
-                <p className="mt-2 text-xs text-red-600">
+                <p className="mt-2 text-xs text-red-400">
                   Couldn't generate suggestions right now. Try again in a moment.
                 </p>
               )}
 
               {subtaskSuggestions.length > 0 && (
-                <div className="mt-3 flex flex-col gap-1.5 rounded-lg border border-orbit-100 bg-orbit-50 p-3">
+                <div className="mt-3 flex flex-col gap-1.5 rounded-lg border border-orbit-500/30 bg-orbit-500/10 p-3">
                   {subtaskSuggestions.map((s) => {
                     const added = addedSubtasks.has(s);
                     return (
                       <div key={s} className="flex items-center justify-between gap-2">
-                        <span className={`text-sm ${added ? 'text-ink-400 line-through' : 'text-ink-900'}`}>
+                        <span className={`text-sm ${added ? 'text-gray-500 line-through' : 'text-gray-100'}`}>
                           {s}
                         </span>
                         <button
                           onClick={() => !added && handleAddSubtask(s)}
                           disabled={added}
-                          className="flex-shrink-0 text-xs font-medium text-orbit-600 hover:text-orbit-700 disabled:text-ink-400"
+                          className="flex-shrink-0 text-xs font-medium text-orbit-600 hover:text-orbit-300 disabled:text-gray-500"
                         >
                           {added ? 'Added' : '+ Add as task'}
                         </button>
@@ -638,13 +638,13 @@ export function TaskDetailModal({
               )}
             </div>
 
-            <div className="mt-6 flex gap-4 border-b border-gray-200">
+            <div className="mt-6 flex gap-4 border-b border-space-700">
               <button
                 onClick={() => setTab('comments')}
                 className={`border-b-2 px-1 pb-2 text-sm font-medium ${
                   tab === 'comments'
-                    ? 'border-orbit-500 text-ink-900'
-                    : 'border-transparent text-ink-400'
+                    ? 'border-orbit-500 text-gray-100'
+                    : 'border-transparent text-gray-500'
                 }`}
               >
                 Comments {comments?.length ? `(${comments.length})` : ''}
@@ -653,8 +653,8 @@ export function TaskDetailModal({
                 onClick={() => setTab('activity')}
                 className={`border-b-2 px-1 pb-2 text-sm font-medium ${
                   tab === 'activity'
-                    ? 'border-orbit-500 text-ink-900'
-                    : 'border-transparent text-ink-400'
+                    ? 'border-orbit-500 text-gray-100'
+                    : 'border-transparent text-gray-500'
                 }`}
               >
                 Activity
@@ -679,15 +679,15 @@ export function TaskDetailModal({
                   </button>
 
                   {mentionQuery !== null && mentionCandidates.length > 0 && (
-                    <div className="absolute bottom-full left-0 mb-1 w-56 rounded-lg border border-gray-200 bg-white py-1 shadow-popover">
+                    <div className="absolute bottom-full left-0 mb-1 w-56 rounded-lg border border-space-700 bg-space-900 py-1 shadow-popover">
                       {mentionCandidates.map((m) => (
                         <button
                           key={m.userId._id}
                           type="button"
                           onClick={() => insertMention(m.userId._id, m.userId.name)}
-                          className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-gray-50"
+                          className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-space-800"
                         >
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orbit-100 text-[10px] font-semibold text-orbit-700">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orbit-100 text-[10px] font-semibold text-orbit-300">
                             {m.userId.name?.[0]?.toUpperCase()}
                           </span>
                           {m.userId.name}
@@ -702,18 +702,18 @@ export function TaskDetailModal({
                     const author = typeof c.authorId === 'object' ? c.authorId : null;
                     return (
                       <div key={c._id} className="flex gap-2">
-                        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-orbit-100 text-xs font-semibold text-orbit-700">
+                        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-orbit-100 text-xs font-semibold text-orbit-300">
                           {author?.name?.[0]?.toUpperCase() || '?'}
                         </div>
-                        <div className="flex-1 rounded-lg bg-gray-50 px-3 py-2">
-                          <p className="text-xs font-medium text-ink-900">{author?.name}</p>
-                          <p className="mt-0.5 text-sm text-ink-600">{c.body}</p>
+                        <div className="flex-1 rounded-lg bg-space-950 px-3 py-2">
+                          <p className="text-xs font-medium text-gray-100">{author?.name}</p>
+                          <p className="mt-0.5 text-sm text-gray-400">{c.body}</p>
                         </div>
                       </div>
                     );
                   })}
                   {comments?.length === 0 && (
-                    <p className="text-sm text-ink-400">No comments yet. Start the conversation.</p>
+                    <p className="text-sm text-gray-500">No comments yet. Start the conversation.</p>
                   )}
                 </div>
               </div>
@@ -724,17 +724,17 @@ export function TaskDetailModal({
                   const label = ACTIVITY_LABEL[a.action]?.(a.metadata) || a.action;
                   return (
                     <div key={a._id} className="flex items-center gap-2 text-sm">
-                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 text-[10px] font-semibold text-ink-600">
+                      <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 text-[10px] font-semibold text-gray-400">
                         {actor?.name?.[0]?.toUpperCase() || '?'}
                       </div>
-                      <p className="text-ink-600">
-                        <span className="font-medium text-ink-900">{actor?.name}</span> {label}
+                      <p className="text-gray-400">
+                        <span className="font-medium text-gray-100">{actor?.name}</span> {label}
                       </p>
                     </div>
                   );
                 })}
                 {activities?.length === 0 && (
-                  <p className="text-sm text-ink-400">No activity recorded yet.</p>
+                  <p className="text-sm text-gray-500">No activity recorded yet.</p>
                 )}
               </div>
             )}

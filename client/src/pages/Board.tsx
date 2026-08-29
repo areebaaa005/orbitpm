@@ -47,10 +47,10 @@ import { Task, TaskPriority, Column } from '../types';
 const TYPE_ICONS: Record<string, string> = { task: '✓', bug: '🐞', story: '📗', spike: '⚡' };
 
 const PRIORITY_STYLES: Record<TaskPriority, string> = {
-  low: 'bg-gray-100 text-gray-600',
-  medium: 'bg-blue-50 text-blue-700',
-  high: 'bg-amber-50 text-amber-700',
-  urgent: 'bg-red-50 text-red-700',
+  low: 'bg-space-800 text-gray-600',
+  medium: 'bg-blue-500/10 text-blue-400',
+  high: 'bg-amber-500/10 text-amber-400',
+  urgent: 'bg-red-500/10 text-red-400',
 };
 
 export default function Board() {
@@ -179,21 +179,21 @@ export default function Board() {
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
       <div className="flex h-full flex-col">
         <div className="h-1" style={{ backgroundColor: project?.color || '#5B5FEF' }} />
-        <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-8 py-5">
-          <Link to="/" className="text-sm text-ink-400 hover:text-ink-600">
+        <header className="flex items-center gap-3 border-b border-space-700 bg-space-900 px-8 py-5">
+          <Link to="/" className="text-sm text-gray-500 hover:text-gray-400">
             Workspaces
           </Link>
-          <span className="text-ink-400">/</span>
+          <span className="text-gray-500">/</span>
           <span
             className="rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-white"
             style={{ backgroundColor: project?.color || '#5B5FEF' }}
           >
             {project?.key}
           </span>
-          <h1 className="flex-1 text-lg font-semibold text-ink-900">{project?.name}</h1>
+          <h1 className="flex-1 text-lg font-semibold text-gray-100">{project?.name}</h1>
           {myRole && (
-            <span className="text-xs font-medium text-ink-400">
-              Viewing as <span className="capitalize text-ink-600">{myRole}</span>
+            <span className="text-xs font-medium text-gray-500">
+              Viewing as <span className="capitalize text-gray-400">{myRole}</span>
             </span>
           )}
           <button
@@ -208,14 +208,14 @@ export default function Board() {
           {canManage && (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+              className="rounded-lg border border-red-500/30 px-3 py-2 text-xs font-semibold text-red-400 transition hover:bg-red-500/10"
             >
               Delete
             </button>
           )}
         </header>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-8 py-3">
+        <div className="flex flex-wrap items-center gap-2 border-b border-space-700 bg-space-900 px-8 py-3">
           <input
             className="input-field max-w-xs text-sm"
             placeholder="🔍 Search tasks…"
@@ -225,7 +225,7 @@ export default function Board() {
           <button
             onClick={() => setOnlyMine((v) => !v)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-              onlyMine ? 'bg-orbit-500 text-white' : 'bg-gray-100 text-ink-600 hover:bg-gray-200'
+              onlyMine ? 'bg-orbit-500 text-white' : 'bg-space-800 text-gray-400 hover:bg-space-700'
             }`}
           >
             My tasks
@@ -233,7 +233,7 @@ export default function Board() {
           <button
             onClick={() => setOnlyOverdue((v) => !v)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-              onlyOverdue ? 'bg-red-500 text-white' : 'bg-gray-100 text-ink-600 hover:bg-gray-200'
+              onlyOverdue ? 'bg-red-500 text-white' : 'bg-space-800 text-gray-400 hover:bg-space-700'
             }`}
           >
             Overdue
@@ -242,7 +242,7 @@ export default function Board() {
           <div className="ml-auto flex items-center gap-2">
             {viewMode === 'list' && (
               <select
-                className="rounded-lg border border-gray-300 px-2 py-1.5 text-xs"
+                className="rounded-lg border border-space-600 px-2 py-1.5 text-xs"
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
               >
@@ -252,11 +252,11 @@ export default function Board() {
                 <option value="epic">Group by epic</option>
               </select>
             )}
-            <div className="flex rounded-lg border border-gray-300 p-0.5">
+            <div className="flex rounded-lg border border-space-600 p-0.5">
               <button
                 onClick={() => setViewMode('kanban')}
                 className={`rounded px-2.5 py-1 text-xs font-medium ${
-                  viewMode === 'kanban' ? 'bg-orbit-500 text-white' : 'text-ink-600'
+                  viewMode === 'kanban' ? 'bg-orbit-500 text-white' : 'text-gray-400'
                 }`}
               >
                 Board
@@ -264,7 +264,7 @@ export default function Board() {
               <button
                 onClick={() => setViewMode('list')}
                 className={`rounded px-2.5 py-1 text-xs font-medium ${
-                  viewMode === 'list' ? 'bg-orbit-500 text-white' : 'text-ink-600'
+                  viewMode === 'list' ? 'bg-orbit-500 text-white' : 'text-gray-400'
                 }`}
               >
                 List
@@ -274,9 +274,9 @@ export default function Board() {
         </div>
 
         {confirmDelete && (
-          <div className="border-b border-red-100 bg-red-50 px-8 py-4">
+          <div className="border-b border-red-500/30 bg-red-500/10 px-8 py-4">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-red-800">
+              <p className="text-sm text-red-400">
                 Delete <span className="font-semibold">{project?.name}</span>? It will be archived
                 and removed from your workspace's active projects.
               </p>
@@ -290,7 +290,7 @@ export default function Board() {
                 </button>
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-ink-600 hover:bg-white"
+                  className="rounded-lg border border-space-600 px-3 py-1.5 text-xs font-semibold text-gray-400 hover:bg-space-900"
                 >
                   Cancel
                 </button>
@@ -300,29 +300,29 @@ export default function Board() {
         )}
 
         {showSummary && (
-          <div className="border-b border-gray-200 bg-orbit-50 px-8 py-4">
+          <div className="border-b border-space-700 bg-orbit-500/10 px-8 py-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orbit-700">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orbit-300">
                   AI project summary
                 </p>
                 {projectSummary.isPending && (
-                  <p className="text-sm text-ink-600">Generating summary…</p>
+                  <p className="text-sm text-gray-400">Generating summary…</p>
                 )}
                 {projectSummary.isError && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-red-400">
                     Couldn't generate a summary right now. Try again in a moment.
                   </p>
                 )}
                 {projectSummary.data && (
-                  <p className="whitespace-pre-line text-sm text-ink-900">
+                  <p className="whitespace-pre-line text-sm text-gray-100">
                     {projectSummary.data}
                   </p>
                 )}
               </div>
               <button
                 onClick={() => setShowSummary(false)}
-                className="text-ink-400 hover:text-ink-600"
+                className="text-gray-500 hover:text-gray-400"
                 aria-label="Dismiss"
               >
                 ✕
@@ -332,10 +332,10 @@ export default function Board() {
         )}
 
         <div className="flex-1 overflow-x-auto px-8 py-6">
-          {columnsLoading && <p className="text-sm text-ink-400">Loading board…</p>}
+          {columnsLoading && <p className="text-sm text-gray-500">Loading board…</p>}
 
           {sprints && sprints.length > 0 && !activeSprint && (
-            <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            <p className="mb-4 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
               No active sprint —{' '}
               <Link to={`/projects/${projectId}/backlog`} className="underline">
                 start one from the Backlog
@@ -453,7 +453,7 @@ function BoardColumn({
     <div
       ref={setNodeRef}
       className={`flex w-72 flex-shrink-0 flex-col rounded-xl2 p-3 transition ${
-        isOver ? 'bg-orbit-50' : 'bg-gray-100/70'
+        isOver ? 'bg-orbit-500/10' : 'bg-space-900/70'
       }`}
     >
       <div className="mb-3 flex items-center justify-between px-1">
@@ -462,34 +462,34 @@ function BoardColumn({
           {isRenaming ? (
             <input
               autoFocus
-              className="min-w-0 flex-1 rounded border border-orbit-300 bg-white px-1 py-0.5 text-sm font-semibold text-ink-900"
+              className="min-w-0 flex-1 rounded border border-orbit-300 bg-space-900 px-1 py-0.5 text-sm font-semibold text-gray-100"
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
               onBlur={handleRenameSubmit}
               onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit()}
             />
           ) : (
-            <span className="truncate text-sm font-semibold text-ink-900">{column.name}</span>
+            <span className="truncate text-sm font-semibold text-gray-100">{column.name}</span>
           )}
         </div>
         <div className="flex flex-shrink-0 items-center gap-1">
-          <span className="text-xs text-ink-400">{tasks.length}</span>
+          <span className="text-xs text-gray-500">{tasks.length}</span>
           {canManage && (
             <div className="relative">
               <button
                 onClick={() => setShowMenu((s) => !s)}
-                className="rounded p-0.5 text-ink-400 hover:bg-gray-200 hover:text-ink-700"
+                className="rounded p-0.5 text-gray-500 hover:bg-space-700 hover:text-gray-300"
               >
                 ⋯
               </button>
               {showMenu && (
-                <div className="absolute right-0 z-30 mt-1 w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-popover">
+                <div className="absolute right-0 z-30 mt-1 w-40 rounded-lg border border-space-700 bg-space-900 py-1 shadow-popover">
                   <button
                     onClick={() => {
                       setIsRenaming(true);
                       setShowMenu(false);
                     }}
-                    className="block w-full px-3 py-1.5 text-left text-xs text-ink-700 hover:bg-gray-50"
+                    className="block w-full px-3 py-1.5 text-left text-xs text-gray-300 hover:bg-space-800"
                   >
                     Rename
                   </button>
@@ -499,7 +499,7 @@ function BoardColumn({
                         reorderColumn.mutate({ columnId: column._id, direction: 'up' });
                         setShowMenu(false);
                       }}
-                      className="block w-full px-3 py-1.5 text-left text-xs text-ink-700 hover:bg-gray-50"
+                      className="block w-full px-3 py-1.5 text-left text-xs text-gray-300 hover:bg-space-800"
                     >
                       ← Move left
                     </button>
@@ -510,7 +510,7 @@ function BoardColumn({
                         reorderColumn.mutate({ columnId: column._id, direction: 'down' });
                         setShowMenu(false);
                       }}
-                      className="block w-full px-3 py-1.5 text-left text-xs text-ink-700 hover:bg-gray-50"
+                      className="block w-full px-3 py-1.5 text-left text-xs text-gray-300 hover:bg-space-800"
                     >
                       Move right →
                     </button>
@@ -520,7 +520,7 @@ function BoardColumn({
                       setShowDeleteConfirm(true);
                       setShowMenu(false);
                     }}
-                    className="block w-full px-3 py-1.5 text-left text-xs text-red-600 hover:bg-red-50"
+                    className="block w-full px-3 py-1.5 text-left text-xs text-red-400 hover:bg-red-500/10"
                   >
                     Delete column
                   </button>
@@ -532,15 +532,15 @@ function BoardColumn({
       </div>
 
       {showDeleteConfirm && (
-        <div className="mb-2 rounded-lg border border-red-100 bg-red-50 p-2.5">
-          <p className="text-xs text-red-800">Delete "{column.name}"?</p>
+        <div className="mb-2 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5">
+          <p className="text-xs text-red-400">Delete "{column.name}"?</p>
           {tasks.length > 0 && (
             <>
-              <p className="mt-1 text-xs text-red-700">
+              <p className="mt-1 text-xs text-red-400">
                 {tasks.length} task(s) here — move them first:
               </p>
               <select
-                className="mt-1 w-full rounded border border-red-200 px-1.5 py-1 text-xs"
+                className="mt-1 w-full rounded border border-red-500/30 px-1.5 py-1 text-xs"
                 value={moveTasksTo}
                 onChange={(e) => setMoveTasksTo(e.target.value)}
               >
@@ -563,7 +563,7 @@ function BoardColumn({
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="rounded border border-gray-300 px-2 py-1 text-xs text-ink-600 hover:bg-white"
+              className="rounded border border-space-600 px-2 py-1 text-xs text-gray-400 hover:bg-space-900"
             >
               Cancel
             </button>
@@ -609,7 +609,7 @@ function BoardColumn({
       ) : (
         <button
           onClick={() => setIsAdding(true)}
-          className="mt-2 rounded-lg px-2 py-1.5 text-left text-sm text-ink-400 transition hover:bg-white hover:text-ink-600"
+          className="mt-2 rounded-lg px-2 py-1.5 text-left text-sm text-gray-500 transition hover:bg-space-900 hover:text-gray-400"
         >
           + Add task
         </button>
@@ -681,7 +681,7 @@ function TaskCard({
         </div>
       )}
 
-      <p className="flex items-start gap-1 text-sm font-medium text-ink-900">
+      <p className="flex items-start gap-1 text-sm font-medium text-gray-100">
         <span className="flex-shrink-0">{TYPE_ICONS[task.type] || '✓'}</span>
         {task.title}
       </p>
@@ -693,21 +693,21 @@ function TaskCard({
           {task.priority}
         </span>
         {typeof task.storyPoints === 'number' && (
-          <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+          <span className="rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-300">
             {task.storyPoints} pts
           </span>
         )}
         {task.dueDate && (
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-              isOverdue ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-600'
+              isOverdue ? 'bg-red-500/10 text-red-400' : 'bg-space-800 text-gray-600'
             }`}
           >
             {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </span>
         )}
         {checklistTotal > 0 && (
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+          <span className="rounded-full bg-space-800 px-2 py-0.5 text-xs font-medium text-gray-600">
             ☑ {checklistDone}/{checklistTotal}
           </span>
         )}

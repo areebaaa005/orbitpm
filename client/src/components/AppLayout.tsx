@@ -140,7 +140,7 @@ export function AppLayout({
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-space-950">
       {/* Desktop sidebar */}
       <aside className="hidden w-60 flex-shrink-0 flex-col bg-space-950 text-space-100 md:flex">
         {sidebarContent}
@@ -160,16 +160,16 @@ export function AppLayout({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2.5 md:justify-end md:px-6">
+        <div className="flex items-center justify-between border-b border-space-700 bg-space-900 px-4 py-2.5 md:justify-end md:px-6">
           <button
             onClick={() => setMobileNavOpen(true)}
-            className="rounded p-1.5 text-ink-600 hover:bg-gray-100 md:hidden"
+            className="rounded p-1.5 text-gray-400 hover:bg-space-800 md:hidden"
             aria-label="Open menu"
           >
             ☰
           </button>
-          <span className="hidden items-center gap-1 text-xs text-ink-400 md:flex">
-            Press <kbd className="rounded border border-gray-200 px-1.5 py-0.5 font-sans text-[10px]">Ctrl K</kbd> to search
+          <span className="hidden items-center gap-1 text-xs text-gray-500 md:flex">
+            Press <kbd className="rounded border border-space-700 px-1.5 py-0.5 font-sans text-[10px]">Ctrl K</kbd> to search
           </span>
           <NotificationBell />
         </div>

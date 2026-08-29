@@ -36,13 +36,13 @@ export function EditProfileModal({ onClose }: { onClose: () => void }) {
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="w-full max-w-sm rounded-xl2 bg-white p-6 shadow-popover"
+          className="w-full max-w-sm rounded-xl2 bg-space-900 p-6 shadow-popover"
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-lg font-semibold text-ink-900">Edit profile</h2>
+          <h2 className="text-lg font-semibold text-gray-100">Edit profile</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-ink-600">Full name</label>
+              <label className="mb-1 block text-xs font-medium text-gray-400">Full name</label>
               <input
                 className="input-field"
                 value={name}
@@ -51,7 +51,7 @@ export function EditProfileModal({ onClose }: { onClose: () => void }) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-ink-600">Email</label>
+              <label className="mb-1 block text-xs font-medium text-gray-400">Email</label>
               <input
                 type="email"
                 className="input-field"
@@ -60,7 +60,7 @@ export function EditProfileModal({ onClose }: { onClose: () => void }) {
                 required
               />
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-400">{error}</p>}
             <div className="flex gap-2 pt-1">
               <button type="submit" disabled={isSaving} className="btn-primary flex-1">
                 {isSaving ? 'Saving…' : 'Save changes'}
