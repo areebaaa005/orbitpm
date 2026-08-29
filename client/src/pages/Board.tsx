@@ -176,7 +176,7 @@ export default function Board() {
   }
 
   return (
-    <AppLayout workspaceId={project?.workspaceId}>
+    <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
       <div className="flex h-full flex-col">
         <div className="h-1" style={{ backgroundColor: project?.color || '#5B5FEF' }} />
         <header className="flex items-center gap-3 border-b border-gray-200 bg-white px-8 py-5">
@@ -205,20 +205,6 @@ export default function Board() {
           >
             ✨ AI summary
           </button>
-          <Link to={`/projects/${projectId}/analytics`} className="btn-secondary text-xs">
-            Analytics
-          </Link>
-          <Link to={`/projects/${projectId}/backlog`} className="btn-secondary text-xs">
-            Backlog
-          </Link>
-          <Link to={`/projects/${projectId}/epics`} className="btn-secondary text-xs">
-            Epics
-          </Link>
-          {canManageMembers && project?.workspaceId && (
-            <Link to={`/workspaces/${project.workspaceId}/members`} className="btn-secondary text-xs">
-              Members
-            </Link>
-          )}
           {canManage && (
             <button
               onClick={() => setConfirmDelete(true)}

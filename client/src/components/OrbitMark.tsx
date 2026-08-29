@@ -4,8 +4,8 @@ interface OrbitMarkProps {
 }
 
 /**
- * The OrbitPM signature mark: a small orbiting-dot motif that echoes the
- * product's name and its core idea (tasks in motion around a project).
+ * OrbitPM's mark: a simple rotated square with a center dot — clean and
+ * geometric, reads clearly at small sizes (favicon, sidebar, tab icon).
  */
 export function OrbitMark({ size = 28, className = '' }: OrbitMarkProps) {
   return (
@@ -17,27 +17,17 @@ export function OrbitMark({ size = 28, className = '' }: OrbitMarkProps) {
       className={className}
       aria-hidden="true"
     >
-      <circle cx="16" cy="16" r="4.5" fill="#5B5FEF" />
-      <ellipse
-        cx="16"
-        cy="16"
-        rx="14"
-        ry="6.5"
-        stroke="#ABA9FF"
-        strokeWidth="1.6"
-        transform="rotate(-20 16 16)"
+      <rect
+        x="4"
+        y="4"
+        width="24"
+        height="24"
+        rx="7"
+        transform="rotate(-15 16 16)"
+        fill="#5B5FEF"
       />
-      <ellipse
-        cx="16"
-        cy="16"
-        rx="14"
-        ry="6.5"
-        stroke="#5B5FEF"
-        strokeOpacity="0.35"
-        strokeWidth="1.6"
-        transform="rotate(40 16 16)"
-      />
-      <circle cx="27.5" cy="11.5" r="2" fill="#F59E0B" />
+      <circle cx="16" cy="16" r="4" fill="white" />
+      <circle cx="24" cy="9" r="2.5" fill="#F59E0B" />
     </svg>
   );
 }

@@ -1,20 +1,29 @@
 import { ReactNode, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { OrbitMark } from './OrbitMark';
 import { NotificationBell } from './NotificationBell';
 import { EditProfileModal } from './EditProfileModal';
 import { CommandPalette } from './CommandPalette';
 import { useAuth } from '../context/AuthContext';
 
+interface NavItem {
+  label: string;
+  icon: string;
+  path: string;
+}
+
 export function AppLayout({
   children,
   workspaceId,
+  projectId,
 }: {
   children: ReactNode;
   workspaceId?: string;
+  projectId?: string;
 }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
 
@@ -22,6 +31,39 @@ export function AppLayout({
     await logout();
     navigate('/login');
   }
+
+  const projectNavItems: NavItem[] = projectId
+    ? [
+        { label: 'Board', icon: '▤', path: `/projects/${projectId}` },
+        { label: 'Backlog', icon: '☰', path: `/projects/${projectId}/backlog` },
+        { label: 'Epics', icon: '◆', path: `/projects/${projectId}/epics` },
+        { label: 'Analytics', icon: '▲', path: `/projects/${projectId}/analytics` },
+      ]
+    : [];
+
+  const workspaceNavItems: NavItem[] = workspaceId
+    ? [{ label: 'Members', icon: '◍', path: `/workspaces/${workspaceId}/members` }]
+    : [];
+
+  function isActive(path: string) {
+    return location.pathname === path;
+  }
+
+  const navLink = (item: NavItem) => (
+    <Link
+      key={item.path}
+      to={item.path}
+      onClick={() => setMobileNavOpen(false)}
+      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
+        isActive(item.path)
+          ? 'bg-orbit-500/15 text-white'
+          : 'text-space-200 hover:bg-space-800 hover:text-white'
+      }`}
+    >
+      <span className="w-4 flex-shrink-0 text-center text-orbit-300">{item.icon}</span>
+      {item.label}
+    </Link>
+  );
 
   const sidebarContent = (
     <>
@@ -39,14 +81,39 @@ export function AppLayout({
         </button>
       </div>
 
-      <nav className="flex-1 px-3 py-2">
-        <Link
-          to="/"
-          onClick={() => setMobileNavOpen(false)}
-          className="block rounded-lg px-3 py-2 text-sm font-medium text-space-100 transition hover:bg-space-800 hover:text-white"
-        >
-          Workspaces
-        </Link>
+      <nav className="flex-1 space-y-4 px-3 py-2 overflow-y-auto">
+        <div>
+          <Link
+            to="/"
+            onClick={() => setMobileNavOpen(false)}
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
+              isActive('/')
+                ? 'bg-orbit-500/15 text-white'
+                : 'text-space-200 hover:bg-space-800 hover:text-white'
+            }`}
+          >
+            <span className="w-4 flex-shrink-0 text-center text-orbit-300">⌂</span>
+            Workspaces
+          </Link>
+        </div>
+
+        {projectNavItems.length > 0 && (
+          <div>
+            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-space-400">
+              Project
+            </p>
+            <div className="space-y-0.5">{projectNavItems.map(navLink)}</div>
+          </div>
+        )}
+
+        {workspaceNavItems.length > 0 && (
+          <div>
+            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-space-400">
+              Workspace
+            </p>
+            <div className="space-y-0.5">{workspaceNavItems.map(navLink)}</div>
+          </div>
+        )}
       </nav>
 
       <div className="border-t border-space-800 px-3 py-4">
