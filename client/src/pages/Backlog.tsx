@@ -134,28 +134,39 @@ export default function Backlog() {
           </div>
 
           {canManage && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <input
-                className="input-field flex-1 text-sm"
-                placeholder="New sprint name (e.g. Sprint 1)"
-                value={newSprintName}
-                onChange={(e) => setNewSprintName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateSprint()}
-              />
-              <input
-                type="date"
-                className="input-field text-sm"
-                value={newSprintStart}
-                onChange={(e) => setNewSprintStart(e.target.value)}
-                title="Start date (optional, for roadmap timeline)"
-              />
-              <input
-                type="date"
-                className="input-field text-sm"
-                value={newSprintEnd}
-                onChange={(e) => setNewSprintEnd(e.target.value)}
-                title="End date (optional, for roadmap timeline)"
-              />
+            <div className="mt-3 flex flex-wrap items-end gap-2">
+              <div className="flex-1">
+                <label className="mb-1 block text-xs font-medium text-ink-600">Sprint name</label>
+                <input
+                  className="input-field text-sm"
+                  placeholder="e.g. Sprint 1"
+                  value={newSprintName}
+                  onChange={(e) => setNewSprintName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleCreateSprint()}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-ink-600">
+                  Start date <span className="text-ink-400">(optional)</span>
+                </label>
+                <input
+                  type="date"
+                  className="input-field text-sm"
+                  value={newSprintStart}
+                  onChange={(e) => setNewSprintStart(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-ink-600">
+                  End date <span className="text-ink-400">(optional)</span>
+                </label>
+                <input
+                  type="date"
+                  className="input-field text-sm"
+                  value={newSprintEnd}
+                  onChange={(e) => setNewSprintEnd(e.target.value)}
+                />
+              </div>
               <button onClick={handleCreateSprint} className="btn-primary text-sm">
                 Create
               </button>
