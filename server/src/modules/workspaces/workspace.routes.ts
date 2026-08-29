@@ -43,6 +43,13 @@ router.patch(
   workspaceController.updateWorkspace
 );
 
+router.delete(
+  '/:workspaceId',
+  requireWorkspaceMember(),
+  requireMinRole('owner'),
+  workspaceController.deleteWorkspace
+);
+
 router.post(
   '/:workspaceId/invitations',
   requireWorkspaceMember(),

@@ -3,6 +3,14 @@ import { Workspace } from './workspace.model';
 import { Membership, WorkspaceRole } from './membership.model';
 import { Invitation } from './invitation.model';
 import { User } from '../users/user.model';
+import { Project } from '../projects/project.model';
+import { Column } from '../projects/column.model';
+import { Task } from '../tasks/task.model';
+import { Comment } from '../comments/comment.model';
+import { Activity } from '../activities/activity.model';
+import { Notification } from '../notifications/notification.model';
+import { Epic } from '../epics/epic.model';
+import { Sprint } from '../sprints/sprint.model';
 import { ApiError } from '../../utils/ApiError';
 import { sendInvitationEmail } from '../../utils/email';
 import { env } from '../../config/env';
@@ -128,6 +136,26 @@ export async function acceptInvitation(userId: string, token: string) {
   await invitation.save();
 
   return invitation.workspaceId;
+}
+
+export async function deleteWorkspace(workspaceId: string) {
+  const projects = await Project.find({ workspaceId }).select('_id');
+  const projectIds = projects.map((p) => p._id);
+
+  await Promise.all([
+    Column.deleteMany({ projectId: { $in: projectIds } }),
+    Project.deleteMany({ workspaceId }),
+    Task.deleteMany({ workspaceId }),
+    Comment.deleteMany({ workspaceId }),
+    Activity.deleteMany({ workspaceId }),
+    Notification.deleteMany({ workspaceId }),
+    Epic.deleteMany({ workspaceId }),
+    Sprint.deleteMany({ workspaceId }),
+    Membership.deleteMany({ workspaceId }),
+    Invitation.deleteMany({ workspaceId }),
+  ]);
+
+  await Workspace.findByIdAndDelete(workspaceId);
 }
 
 export async function getMyMembership(workspaceId: string, userId: string) {

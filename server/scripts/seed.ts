@@ -108,6 +108,7 @@ async function main() {
       labels?: { name: string; color: string }[];
       checklist?: { text: string; done: boolean }[];
       description?: string;
+      epicId?: mongoose.Types.ObjectId;
     }
   ) {
     return Task.create({
@@ -124,8 +125,18 @@ async function main() {
       labels: data.labels || [],
       checklist: data.checklist || [],
       description: data.description,
+      epicId: data.epicId,
       title: data.title,
     });
+  }
+
+  async function createEpic(
+    projectId: mongoose.Types.ObjectId,
+    workspaceId: mongoose.Types.ObjectId,
+    name: string,
+    color: string
+  ) {
+    return Epic.create({ projectId, workspaceId, name, color, createdBy: owner!._id });
   }
 
   // ---------- Workspace 1: Product Team ----------
@@ -138,6 +149,9 @@ async function main() {
     '#5B5FEF'
   );
   const [webBacklog, webTodo, webProgress, webDone] = webCols;
+
+  const homepageEpic = await createEpic(webProject._id, ws1._id, 'Homepage Revamp', '#5B5FEF');
+  const perfEpic = await createEpic(webProject._id, ws1._id, 'Performance & Infra', '#10B981');
 
   await createTask(ws1._id, webProject._id, webBacklog._id, 0, {
     title: 'Research competitor landing pages',
@@ -153,6 +167,7 @@ async function main() {
     storyPoints: 5,
     dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
     labels: [{ name: 'Design', color: '#8B5CF6' }],
+    epicId: homepageEpic._id,
     checklist: [
       { text: 'Wireframe', done: true },
       { text: 'High-fidelity mockup', done: false },
@@ -179,12 +194,14 @@ async function main() {
     priority: 'medium',
     type: 'task',
     storyPoints: 2,
+    epicId: perfEpic._id,
   });
   await createTask(ws1._id, webProject._id, webDone._id, 1, {
     title: 'Migrate to Tailwind CSS v4',
     priority: 'low',
     type: 'task',
     storyPoints: 2,
+    epicId: perfEpic._id,
   });
 
   const { project: mobProject, columns: mobCols } = await createProject(
@@ -194,6 +211,8 @@ async function main() {
     '#F59E0B'
   );
   const [mobBacklog, mobTodo, mobProgress] = mobCols;
+
+  const authEpic = await createEpic(mobProject._id, ws1._id, 'Secure Authentication', '#EF4444');
 
   await createTask(ws1._id, mobProject._id, mobBacklog._id, 0, {
     title: 'Spike: evaluate push notification providers',
@@ -207,6 +226,7 @@ async function main() {
     type: 'story',
     storyPoints: 8,
     labels: [{ name: 'Security', color: '#EF4444' }],
+    epicId: authEpic._id,
   });
   await createTask(ws1._id, mobProject._id, mobProgress._id, 0, {
     title: 'Crash on app launch (Android 14)',
@@ -227,11 +247,14 @@ async function main() {
   );
   const [mktBacklog, mktTodo, mktProgress, mktDone] = mktCols;
 
+  const launchEpic = await createEpic(mktProject._id, ws2._id, 'Holiday Launch', '#F59E0B');
+
   await createTask(ws2._id, mktProject._id, mktBacklog._id, 0, {
     title: 'Brainstorm holiday campaign themes',
     priority: 'low',
     type: 'task',
     storyPoints: 2,
+    epicId: launchEpic._id,
   });
   await createTask(ws2._id, mktProject._id, mktTodo._id, 0, {
     title: 'Write email newsletter copy',
@@ -239,6 +262,7 @@ async function main() {
     type: 'task',
     storyPoints: 3,
     dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    epicId: launchEpic._id,
     checklist: [
       { text: 'Draft subject lines', done: true },
       { text: 'Body copy', done: false },
@@ -250,6 +274,7 @@ async function main() {
     type: 'task',
     storyPoints: 5,
     labels: [{ name: 'Design', color: '#8B5CF6' }],
+    epicId: launchEpic._id,
   });
   await createTask(ws2._id, mktProject._id, mktDone._id, 0, {
     title: 'Finalize Q4 budget approval',
@@ -280,8 +305,8 @@ async function main() {
   });
 
   console.log('[seed] Demo data created:');
-  console.log('  - Workspace "Product Team" → Website Redesign (6 tasks), Mobile App (3 tasks)');
-  console.log('  - Workspace "Marketing" → Q4 Campaign (4 tasks), Social Growth (2 tasks)');
+  console.log('  - Workspace "Product Team" → Website Redesign (6 tasks, 2 epics), Mobile App (3 tasks, 1 epic)');
+  console.log('  - Workspace "Marketing" → Q4 Campaign (4 tasks, 1 epic), Social Growth (2 tasks)');
   console.log(`  - Owner: ${owner.email}`);
 
   await mongoose.disconnect();

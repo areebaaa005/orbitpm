@@ -12,6 +12,11 @@ export const getMyMembership = catchAsync(async (req: Request, res: Response) =>
   res.status(200).json({ success: true, data: { role: membership.role } });
 });
 
+export const deleteWorkspace = catchAsync(async (req: Request, res: Response) => {
+  await workspaceService.deleteWorkspace(req.params.workspaceId);
+  res.status(200).json({ success: true, data: null });
+});
+
 export const updateWorkspace = catchAsync(async (req: Request, res: Response) => {
   const workspace = await workspaceService.updateWorkspace(req.params.workspaceId, req.body);
   res.status(200).json({ success: true, data: { workspace } });

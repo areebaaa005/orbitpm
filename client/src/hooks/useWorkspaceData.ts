@@ -315,6 +315,16 @@ export function useUpdateWorkspace(workspaceId: string | undefined) {
   });
 }
 
+export function useDeleteWorkspace() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (workspaceId: string) => {
+      await api.delete(`/workspaces/${workspaceId}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workspaces'] }),
+  });
+}
+
 export function useDeleteTask(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({

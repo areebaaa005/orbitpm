@@ -46,6 +46,13 @@ import { Task, TaskPriority, Column } from '../types';
 
 const TYPE_ICONS: Record<string, string> = { task: '✓', bug: '🐞', story: '📗', spike: '⚡' };
 
+const GROUP_BY_LABELS: Record<'none' | 'assignee' | 'priority' | 'epic', string> = {
+  none: 'No grouping',
+  assignee: 'Group by assignee',
+  priority: 'Group by priority',
+  epic: 'Group by epic',
+};
+
 const PRIORITY_STYLES: Record<TaskPriority, string> = {
   low: 'bg-space-800 text-gray-600',
   medium: 'bg-blue-500/10 text-blue-400',
@@ -80,6 +87,7 @@ export default function Board() {
   const [onlyOverdue, setOnlyOverdue] = useState(false);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [groupBy, setGroupBy] = useState<'none' | 'assignee' | 'priority' | 'epic'>('none');
+  const [showGroupByMenu, setShowGroupByMenu] = useState(false);
   const { data: epics } = useEpics(projectId);
 
   const activeSprint = sprints?.find((s) => s.status === 'active');
@@ -241,16 +249,32 @@ export default function Board() {
 
           <div className="ml-auto flex items-center gap-2">
             {viewMode === 'list' && (
-              <select
-                className="rounded-lg border border-space-600 px-2 py-1.5 text-xs"
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
-              >
-                <option value="none">No grouping</option>
-                <option value="assignee">Group by assignee</option>
-                <option value="priority">Group by priority</option>
-                <option value="epic">Group by epic</option>
-              </select>
+              <div className="relative">
+                <button
+                  onClick={() => setShowGroupByMenu((s) => !s)}
+                  className="flex items-center gap-1.5 rounded-lg border border-space-600 bg-space-800 px-2.5 py-1.5 text-xs text-gray-300 hover:bg-space-700"
+                >
+                  {GROUP_BY_LABELS[groupBy]} <span className="text-gray-500">▾</span>
+                </button>
+                {showGroupByMenu && (
+                  <div className="absolute right-0 z-30 mt-1 w-44 rounded-lg border border-space-700 bg-space-900 py-1 shadow-popover">
+                    {(Object.keys(GROUP_BY_LABELS) as (keyof typeof GROUP_BY_LABELS)[]).map((key) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setGroupBy(key);
+                          setShowGroupByMenu(false);
+                        }}
+                        className={`block w-full px-3 py-1.5 text-left text-xs hover:bg-space-800 ${
+                          groupBy === key ? 'text-orbit-300' : 'text-gray-300'
+                        }`}
+                      >
+                        {GROUP_BY_LABELS[key]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
             <div className="flex rounded-lg border border-space-600 p-0.5">
               <button

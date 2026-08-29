@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppLayout } from '../components/AppLayout';
 import {
@@ -9,6 +9,7 @@ import {
   useUpdateMemberRole,
   useRemoveMember,
   useUpdateWorkspace,
+  useDeleteWorkspace,
 } from '../hooks/useWorkspaceData';
 import { WorkspaceRole } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +26,7 @@ const ROLE_STYLES: Record<WorkspaceRole, string> = {
 
 export default function Members() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: myRole } = useMyRole(workspaceId);
   const { data: members, isLoading } = useMembers(workspaceId);
@@ -32,6 +34,7 @@ export default function Members() {
   const updateRole = useUpdateMemberRole(workspaceId);
   const removeMember = useRemoveMember(workspaceId);
   const updateWorkspace = useUpdateWorkspace(workspaceId);
+  const deleteWorkspace = useDeleteWorkspace();
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<WorkspaceRole>('member');
@@ -193,10 +196,20 @@ export default function Members() {
         </div>
 
         {myRole === 'owner' && (
-          <WorkspaceSettings
-            onRename={(name) => updateWorkspace.mutate(name)}
-            isSaving={updateWorkspace.isPending}
-          />
+          <>
+            <WorkspaceSettings
+              onRename={(name) => updateWorkspace.mutate(name)}
+              isSaving={updateWorkspace.isPending}
+            />
+            <DangerZone
+              onDelete={async () => {
+                if (!workspaceId) return;
+                await deleteWorkspace.mutateAsync(workspaceId);
+                navigate('/');
+              }}
+              isDeleting={deleteWorkspace.isPending}
+            />
+          </>
         )}
       </div>
     </AppLayout>
@@ -231,6 +244,67 @@ function WorkspaceSettings({
           Save
         </button>
       </div>
+    </div>
+  );
+}
+
+function DangerZone({
+  onDelete,
+  isDeleting,
+}: {
+  onDelete: () => void;
+  isDeleting: boolean;
+}) {
+  const [confirmText, setConfirmText] = useState('');
+  const [expanded, setExpanded] = useState(false);
+  const canConfirm = confirmText.trim().toUpperCase() === 'DELETE';
+
+  return (
+    <div className="mt-6 rounded-xl2 border border-red-500/30 bg-red-500/5 p-5">
+      <h2 className="text-sm font-semibold text-red-400">Danger zone</h2>
+      <p className="mt-1 text-xs text-gray-500">
+        Permanently deletes this workspace and everything in it — all projects, tasks, comments,
+        and members. This cannot be undone.
+      </p>
+
+      {!expanded ? (
+        <button
+          onClick={() => setExpanded(true)}
+          className="mt-3 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10"
+        >
+          Delete this workspace
+        </button>
+      ) : (
+        <div className="mt-3">
+          <p className="mb-1.5 text-xs text-gray-400">
+            Type <strong className="text-red-400">DELETE</strong> to confirm:
+          </p>
+          <div className="flex gap-2">
+            <input
+              className="input-field flex-1 text-sm"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="DELETE"
+            />
+            <button
+              onClick={onDelete}
+              disabled={!canConfirm || isDeleting}
+              className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-40"
+            >
+              {isDeleting ? 'Deleting…' : 'Confirm delete'}
+            </button>
+            <button
+              onClick={() => {
+                setExpanded(false);
+                setConfirmText('');
+              }}
+              className="btn-secondary text-xs"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
