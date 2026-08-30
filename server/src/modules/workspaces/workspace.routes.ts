@@ -13,6 +13,11 @@ import * as workspaceController from './workspace.controller';
 
 const router = Router();
 
+// Public: lets the invite-accept page know who the invitation is for
+// before the person is asked to log in — no auth required, since the
+// person clicking it isn't authenticated yet.
+router.get('/invitations/preview', workspaceController.previewInvitation);
+
 router.use(requireAuth);
 
 router.post('/', validate(createWorkspaceSchema), workspaceController.createWorkspace);

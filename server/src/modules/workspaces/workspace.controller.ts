@@ -54,6 +54,11 @@ export const inviteMember = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+export const previewInvitation = catchAsync(async (req: Request, res: Response) => {
+  const result = await workspaceService.previewInvitation(req.query.token as string);
+  res.status(200).json({ success: true, data: result });
+});
+
 export const acceptInvitation = catchAsync(async (req: Request, res: Response) => {
   const workspaceId = await workspaceService.acceptInvitation(req.userId!, req.body.token);
   res.status(200).json({ success: true, data: { workspaceId } });

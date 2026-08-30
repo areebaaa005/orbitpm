@@ -108,6 +108,18 @@ export async function createInvitation(
   return { invitation, emailSent: emailResult.sent };
 }
 
+export async function previewInvitation(token: string) {
+  const invitation = await Invitation.findOne({ token }).populate('workspaceId', 'name');
+  if (!invitation || invitation.acceptedAt || invitation.expiresAt < new Date()) {
+    throw ApiError.badRequest('INVALID_INVITATION', 'This invitation is invalid or has expired');
+  }
+  return {
+    email: invitation.email,
+    role: invitation.role,
+    workspaceName: (invitation.workspaceId as any)?.name || 'a workspace',
+  };
+}
+
 export async function acceptInvitation(userId: string, token: string) {
   const invitation = await Invitation.findOne({ token });
   if (!invitation || invitation.acceptedAt || invitation.expiresAt < new Date()) {

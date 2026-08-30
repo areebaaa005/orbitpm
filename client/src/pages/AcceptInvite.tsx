@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useAcceptInvitation } from '../hooks/useWorkspaceData';
+import { useAcceptInvitation, useInvitationPreview } from '../hooks/useWorkspaceData';
 import { OrbitMark } from '../components/OrbitMark';
 
 export const PENDING_INVITE_KEY = 'orbitpm_pending_invite_token';
@@ -11,11 +11,12 @@ export default function AcceptInvite() {
   const token = searchParams.get('token');
   const { user, isLoading: authLoading, logout } = useAuth();
   const acceptInvitation = useAcceptInvitation();
+  const { data: preview, isLoading: previewLoading, isError: previewError } = useInvitationPreview(token);
   const navigate = useNavigate();
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Always stash the token so that whichever path the person takes next
+  // Always stash the token so whichever path the person takes next
   // (sign in, register, or switch account) picks it back up automatically.
   useEffect(() => {
     if (token) sessionStorage.setItem(PENDING_INVITE_KEY, token);
@@ -35,9 +36,7 @@ export default function AcceptInvite() {
   }
 
   async function handleSwitchAccount(destination: '/login' | '/register') {
-    // Token already saved to sessionStorage above — logout, then the
-    // Login/Register page will auto-accept it once the correct account signs in.
-    await logout();
+    if (user) await logout();
     navigate(destination);
   }
 
@@ -49,7 +48,7 @@ export default function AcceptInvite() {
     );
   }
 
-  if (authLoading) {
+  if (authLoading || previewLoading) {
     return (
       <CenteredCard>
         <p className="text-sm text-gray-400">Loading…</p>
@@ -57,20 +56,46 @@ export default function AcceptInvite() {
     );
   }
 
-  if (!user) {
+  if (previewError || !preview) {
     return (
       <CenteredCard>
-        <h1 className="text-lg font-semibold text-gray-100">You've been invited to OrbitPM</h1>
+        <p className="text-sm text-red-400">
+          This invitation link is invalid or has expired. Ask whoever invited you to send a new one.
+        </p>
+      </CenteredCard>
+    );
+  }
+
+  const isCorrectAccount = user && user.email.toLowerCase() === preview.email.toLowerCase();
+
+  // Not logged in, or logged in as the wrong person — never show an Accept
+  // button here, since it would just fail. Only offer the two real options.
+  if (!isCorrectAccount) {
+    return (
+      <CenteredCard>
+        <h1 className="text-lg font-semibold text-gray-100">
+          You've been invited to {preview.workspaceName}
+        </h1>
         <p className="mt-2 text-sm text-gray-400">
-          Log in or create an account first — we'll add you to the workspace automatically right after.
+          This invitation is for <strong className="text-gray-200">{preview.email}</strong>.
+          {user && (
+            <>
+              {' '}
+              You're currently signed in as <strong className="text-gray-200">{user.email}</strong>.
+            </>
+          )}
+        </p>
+        <p className="mt-2 text-sm text-gray-400">
+          Already have an account with that email? Sign in. First time? Create one — either way
+          you'll be added to the workspace automatically.
         </p>
         <div className="mt-5 flex gap-2">
-          <Link to="/login" className="btn-primary flex-1 text-center">
+          <button onClick={() => handleSwitchAccount('/login')} className="btn-primary flex-1">
             Sign in
-          </Link>
-          <Link to="/register" className="btn-secondary flex-1 text-center">
+          </button>
+          <button onClick={() => handleSwitchAccount('/register')} className="btn-secondary flex-1">
             Create account
-          </Link>
+          </button>
         </div>
       </CenteredCard>
     );
@@ -85,9 +110,10 @@ export default function AcceptInvite() {
         </>
       ) : (
         <>
-          <h1 className="text-lg font-semibold text-gray-100">Join this workspace?</h1>
+          <h1 className="text-lg font-semibold text-gray-100">Join {preview.workspaceName}?</h1>
           <p className="mt-2 text-sm text-gray-400">
-            Signed in as <strong>{user.email}</strong>. Accepting will add this workspace to your list.
+            Signed in as <strong>{user!.email}</strong>. You'll join as a{' '}
+            <strong className="capitalize">{preview.role}</strong>.
           </p>
           {status === 'error' && (
             <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{errorMessage}</p>
@@ -99,26 +125,6 @@ export default function AcceptInvite() {
           >
             {acceptInvitation.isPending ? 'Joining…' : 'Accept invitation'}
           </button>
-
-          <div className="mt-4 border-t border-space-700 pt-4">
-            <p className="mb-2 text-xs text-gray-500">
-              Not you? This invite may be for a different email.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleSwitchAccount('/login')}
-                className="btn-secondary flex-1 text-xs"
-              >
-                Sign in as someone else
-              </button>
-              <button
-                onClick={() => handleSwitchAccount('/register')}
-                className="btn-secondary flex-1 text-xs"
-              >
-                Create new account
-              </button>
-            </div>
-          </div>
         </>
       )}
     </CenteredCard>

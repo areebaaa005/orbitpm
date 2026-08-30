@@ -245,6 +245,18 @@ export function useAcceptInvitation() {
   });
 }
 
+export function useInvitationPreview(token: string | null) {
+  return useQuery({
+    queryKey: ['invitation-preview', token],
+    queryFn: async () => {
+      const res = await api.get('/workspaces/invitations/preview', { params: { token } });
+      return res.data.data as { email: string; role: string; workspaceName: string };
+    },
+    enabled: !!token,
+    retry: false,
+  });
+}
+
 export function useMyRole(workspaceId: string | undefined) {
   return useQuery({
     queryKey: ['my-role', workspaceId],
