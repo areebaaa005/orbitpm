@@ -86,21 +86,35 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
   const [key, setKey] = useState('');
   const [color, setColor] = useState(PROJECT_COLORS[0]);
   const [showForm, setShowForm] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   async function handleCreate() {
     if (!name.trim() || !key.trim()) return;
-    const project = await createProject.mutateAsync({ name: name.trim(), key: key.trim(), color });
-    setName('');
-    setKey('');
-    setShowForm(false);
-    navigate(`/projects/${project._id}`);
+    setCreateError(null);
+    try {
+      const project = await createProject.mutateAsync({ name: name.trim(), key: key.trim(), color });
+      setName('');
+      setKey('');
+      setShowForm(false);
+      navigate(`/projects/${project._id}`);
+    } catch (err: any) {
+      setCreateError(err?.response?.data?.error?.message || 'Could not create project');
+    }
   }
 
   return (
     <div className="mt-10">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-100">Projects</h2>
-        <button onClick={() => setShowForm((s) => !s)} className="btn-secondary text-xs">
+        <button
+          onClick={() => {
+            setShowForm((s) => !s);
+            setName('');
+            setKey('');
+            setCreateError(null);
+          }}
+          className="btn-secondary text-xs"
+        >
           {showForm ? 'Cancel' : '+ New project'}
         </button>
       </div>
@@ -130,6 +144,10 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
             Create
           </button>
         </div>
+      )}
+
+      {createError && (
+        <p className="mt-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{createError}</p>
       )}
 
       {showForm && (
