@@ -32,9 +32,10 @@ export async function createProject(
 
 export async function listProjects(workspaceId: string, page = 1, limit = 20) {
   const skip = (page - 1) * limit;
+  const query = { workspaceId, status: 'active' };
   const [projects, total] = await Promise.all([
-    Project.find({ workspaceId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
-    Project.countDocuments({ workspaceId }),
+    Project.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Project.countDocuments(query),
   ]);
   return { projects, total, page, pages: Math.ceil(total / limit) };
 }
