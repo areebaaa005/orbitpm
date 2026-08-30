@@ -104,7 +104,7 @@ export default function Backlog() {
                             startSprint.mutate(s._id);
                           }}
                           disabled={!!activeSprint || startSprint.isPending}
-                          className="text-xs font-medium text-orbit-600 hover:text-orbit-300 disabled:text-ink-300"
+                          className="text-xs font-medium text-orbit-600 hover:text-orbit-300 disabled:text-gray-600"
                         >
                           Start sprint
                         </button>

@@ -81,7 +81,7 @@ export function NotificationBell() {
               <button
                 key={n._id}
                 onClick={() => !n.readAt && markRead.mutate(n._id)}
-                className={`block w-full border-b border-gray-50 px-4 py-3 text-left text-sm transition hover:bg-space-800 ${
+                className={`block w-full border-b border-space-800 px-4 py-3 text-left text-sm transition hover:bg-space-800 ${
                   n.readAt ? 'text-gray-500' : 'font-medium text-gray-100'
                 }`}
               >

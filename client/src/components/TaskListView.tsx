@@ -96,46 +96,48 @@ export function TaskListView({
               {group.label} <span className="text-gray-500">({group.tasks.length})</span>
             </h3>
           )}
-          <div className="overflow-hidden rounded-xl2 border border-space-700 bg-space-900">
-            <div className="grid grid-cols-[1fr_100px_120px_110px_90px_110px] gap-2 border-b border-space-800 bg-space-950 px-4 py-2">
-              {headerCell('title', 'Title')}
-              {headerCell('priority', 'Priority')}
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Assignees</span>
-              {headerCell('dueDate', 'Due')}
-              {headerCell('storyPoints', 'Pts')}
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Status</span>
+          <div className="overflow-x-auto rounded-xl2 border border-space-700 bg-space-900">
+            <div className="min-w-[640px]">
+              <div className="grid grid-cols-[1fr_100px_120px_110px_90px_110px] gap-2 border-b border-space-800 bg-space-950 px-4 py-2">
+                {headerCell('title', 'Title')}
+                {headerCell('priority', 'Priority')}
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Assignees</span>
+                {headerCell('dueDate', 'Due')}
+                {headerCell('storyPoints', 'Pts')}
+                <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Status</span>
+              </div>
+              {group.tasks.map((task) => {
+                const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+                return (
+                  <div
+                    key={task._id}
+                    onClick={() => onTaskClick(task)}
+                    className="grid cursor-pointer grid-cols-[1fr_100px_120px_110px_90px_110px] items-center gap-2 border-b border-space-800 px-4 py-2.5 text-sm hover:bg-space-800"
+                  >
+                    <span className="flex items-center gap-1.5 truncate text-gray-100">
+                      <span className="flex-shrink-0">{TYPE_ICONS[task.type] || '✓'}</span>
+                      {task.title}
+                    </span>
+                    <span className="capitalize text-gray-400">{task.priority}</span>
+                    <span className="truncate text-xs text-gray-500">
+                      {task.assigneeIds.map((id) => memberMap[id]).filter(Boolean).join(', ') || '—'}
+                    </span>
+                    <span className={`text-xs ${isOverdue ? 'font-medium text-red-400' : 'text-gray-500'}`}>
+                      {task.dueDate
+                        ? new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+                        : '—'}
+                    </span>
+                    <span className="text-xs text-gray-500">{task.storyPoints ?? '—'}</span>
+                    <span className="truncate text-xs text-gray-500">
+                      {columnMap[task.columnId]?.name || '—'}
+                    </span>
+                  </div>
+                );
+              })}
+              {group.tasks.length === 0 && (
+                <p className="px-4 py-6 text-center text-sm text-gray-500">No tasks.</p>
+              )}
             </div>
-            {group.tasks.map((task) => {
-              const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
-              return (
-                <div
-                  key={task._id}
-                  onClick={() => onTaskClick(task)}
-                  className="grid cursor-pointer grid-cols-[1fr_100px_120px_110px_90px_110px] items-center gap-2 border-b border-gray-50 px-4 py-2.5 text-sm hover:bg-space-800"
-                >
-                  <span className="flex items-center gap-1.5 truncate text-gray-100">
-                    <span className="flex-shrink-0">{TYPE_ICONS[task.type] || '✓'}</span>
-                    {task.title}
-                  </span>
-                  <span className="capitalize text-gray-400">{task.priority}</span>
-                  <span className="truncate text-xs text-gray-500">
-                    {task.assigneeIds.map((id) => memberMap[id]).filter(Boolean).join(', ') || '—'}
-                  </span>
-                  <span className={`text-xs ${isOverdue ? 'font-medium text-red-400' : 'text-gray-500'}`}>
-                    {task.dueDate
-                      ? new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-                      : '—'}
-                  </span>
-                  <span className="text-xs text-gray-500">{task.storyPoints ?? '—'}</span>
-                  <span className="truncate text-xs text-gray-500">
-                    {columnMap[task.columnId]?.name || '—'}
-                  </span>
-                </div>
-              );
-            })}
-            {group.tasks.length === 0 && (
-              <p className="px-4 py-6 text-center text-sm text-gray-500">No tasks.</p>
-            )}
           </div>
         </div>
       ))}

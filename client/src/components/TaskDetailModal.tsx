@@ -530,7 +530,7 @@ export function TaskDetailModal({
                     {canEdit && (
                       <button
                         onClick={() => removeChecklistItem(item._id)}
-                        className="text-ink-300 hover:text-red-500"
+                        className="text-gray-600 hover:text-red-500"
                       >
                         ✕
                       </button>
@@ -578,7 +578,7 @@ export function TaskDetailModal({
                     {a.uploadedBy === user?.id && (
                       <button
                         onClick={() => deleteAttachment.mutate(a._id)}
-                        className="flex-shrink-0 text-ink-300 hover:text-red-500"
+                        className="flex-shrink-0 text-gray-600 hover:text-red-500"
                       >
                         ✕
                       </button>

@@ -94,7 +94,7 @@ export default function Epics() {
                   {canManage && (
                     <button
                       onClick={() => deleteEpic.mutate(epic._id)}
-                      className="text-ink-300 hover:text-red-500"
+                      className="text-gray-600 hover:text-red-500"
                       aria-label="Delete epic"
                     >
                       ✕
