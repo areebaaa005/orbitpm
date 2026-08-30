@@ -9,19 +9,17 @@ export const PENDING_INVITE_KEY = 'orbitpm_pending_invite_token';
 export default function AcceptInvite() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, logout } = useAuth();
   const acceptInvitation = useAcceptInvitation();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // If the person isn't logged in yet, stash the token and send them to log
-  // in or register first — we pick this back up right after that succeeds.
+  // Always stash the token so that whichever path the person takes next
+  // (sign in, register, or switch account) picks it back up automatically.
   useEffect(() => {
-    if (!authLoading && !user && token) {
-      sessionStorage.setItem(PENDING_INVITE_KEY, token);
-    }
-  }, [authLoading, user, token]);
+    if (token) sessionStorage.setItem(PENDING_INVITE_KEY, token);
+  }, [token]);
 
   async function handleAccept() {
     if (!token) return;
@@ -34,6 +32,13 @@ export default function AcceptInvite() {
       setStatus('error');
       setErrorMessage(err?.response?.data?.error?.message || 'This invitation could not be accepted.');
     }
+  }
+
+  async function handleSwitchAccount(destination: '/login' | '/register') {
+    // Token already saved to sessionStorage above — logout, then the
+    // Login/Register page will auto-accept it once the correct account signs in.
+    await logout();
+    navigate(destination);
   }
 
   if (!token) {
@@ -94,6 +99,26 @@ export default function AcceptInvite() {
           >
             {acceptInvitation.isPending ? 'Joining…' : 'Accept invitation'}
           </button>
+
+          <div className="mt-4 border-t border-space-700 pt-4">
+            <p className="mb-2 text-xs text-gray-500">
+              Not you? This invite may be for a different email.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSwitchAccount('/login')}
+                className="btn-secondary flex-1 text-xs"
+              >
+                Sign in as someone else
+              </button>
+              <button
+                onClick={() => handleSwitchAccount('/register')}
+                className="btn-secondary flex-1 text-xs"
+              >
+                Create new account
+              </button>
+            </div>
+          </div>
         </>
       )}
     </CenteredCard>
