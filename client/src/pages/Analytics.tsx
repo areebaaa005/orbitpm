@@ -95,18 +95,21 @@ export default function Analytics() {
   return (
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
       <div className="flex h-full flex-col">
-        <header className="flex items-center gap-3 border-b border-space-700 bg-space-900 px-8 py-5">
-          <Link to={`/projects/${projectId}`} className="text-sm text-gray-500 hover:text-gray-400">
+        <header className="flex flex-wrap items-center gap-2 border-b border-space-700 bg-space-900 px-4 py-3 sm:gap-3 sm:px-8 sm:py-5">
+          <Link
+            to={`/projects/${projectId}`}
+            className="min-w-0 truncate text-sm text-gray-500 hover:text-gray-400"
+          >
             {project?.name}
           </Link>
           <span className="text-gray-500">/</span>
-          <h1 className="flex-1 text-lg font-semibold text-gray-100">Analytics</h1>
+          <h1 className="flex-1 text-base font-semibold text-gray-100 sm:text-lg">Analytics</h1>
           <button onClick={handleExportPdf} disabled={!data} className="btn-secondary text-xs">
             📄 Export PDF
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6">
+        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
           {isLoading && <p className="text-sm text-gray-500">Loading analytics…</p>}
 
           {data && (

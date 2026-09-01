@@ -26,7 +26,7 @@ export default function Dashboard() {
 
   return (
     <AppLayout>
-      <div className="mx-auto max-w-5xl px-8 py-10">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-8">
         <h1 className="text-2xl font-semibold text-gray-100">Your workspaces</h1>
         <p className="mt-1 text-sm text-gray-400">
           A workspace is where your team, projects, and boards live together.
@@ -157,7 +157,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
             <button
               key={c}
               onClick={() => setColor(c)}
-              className={`h-6 w-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-2 ring-ink-900' : ''}`}
+              className={`h-6 w-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-2 ring-offset-space-900 ring-white' : ''}`}
               style={{ backgroundColor: c }}
               aria-label={`Select color ${c}`}
             />

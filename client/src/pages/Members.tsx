@@ -63,7 +63,7 @@ export default function Members() {
 
   return (
     <AppLayout workspaceId={workspaceId}>
-      <div className="mx-auto max-w-3xl px-8 py-10">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-8">
         <Link to="/" className="text-sm text-gray-500 hover:text-gray-400">
           ← Workspaces
         </Link>

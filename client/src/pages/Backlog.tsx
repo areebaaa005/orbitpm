@@ -54,7 +54,7 @@ export default function Backlog() {
 
   return (
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
-      <div className="mx-auto max-w-4xl px-8 py-10">
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-8">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to={`/projects/${projectId}`} className="hover:text-gray-400">
             {project?.name}

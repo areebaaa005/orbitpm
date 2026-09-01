@@ -187,20 +187,22 @@ export default function Board() {
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
       <div className="flex h-full flex-col">
         <div className="h-1" style={{ backgroundColor: project?.color || '#5B5FEF' }} />
-        <header className="flex items-center gap-3 border-b border-space-700 bg-space-900 px-8 py-5">
-          <Link to="/" className="text-sm text-gray-500 hover:text-gray-400">
+        <header className="flex flex-wrap items-center gap-2 border-b border-space-700 bg-space-900 px-4 py-3 sm:gap-3 sm:px-8 sm:py-5">
+          <Link to="/" className="hidden text-sm text-gray-500 hover:text-gray-400 sm:inline">
             Workspaces
           </Link>
-          <span className="text-gray-500">/</span>
+          <span className="hidden text-gray-500 sm:inline">/</span>
           <span
-            className="rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-white"
+            className="flex-shrink-0 rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-white"
             style={{ backgroundColor: project?.color || '#5B5FEF' }}
           >
             {project?.key}
           </span>
-          <h1 className="flex-1 text-lg font-semibold text-gray-100">{project?.name}</h1>
+          <h1 className="min-w-0 flex-1 truncate text-base font-semibold text-gray-100 sm:text-lg">
+            {project?.name}
+          </h1>
           {myRole && (
-            <span className="text-xs font-medium text-gray-500">
+            <span className="hidden text-xs font-medium text-gray-500 sm:inline">
               Viewing as <span className="capitalize text-gray-400">{myRole}</span>
             </span>
           )}
@@ -223,7 +225,7 @@ export default function Board() {
           )}
         </header>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-space-700 bg-space-900 px-8 py-3">
+        <div className="flex flex-wrap items-center gap-2 border-b border-space-700 bg-space-900 px-4 py-3 sm:px-8">
           <input
             className="input-field max-w-xs text-sm"
             placeholder="🔍 Search tasks…"
@@ -298,7 +300,7 @@ export default function Board() {
         </div>
 
         {confirmDelete && (
-          <div className="border-b border-red-500/30 bg-red-500/10 px-8 py-4">
+          <div className="border-b border-red-500/30 bg-red-500/10 px-4 py-4 sm:px-8">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-red-400">
                 Delete <span className="font-semibold">{project?.name}</span>? It will be archived
@@ -324,7 +326,7 @@ export default function Board() {
         )}
 
         {showSummary && (
-          <div className="border-b border-space-700 bg-orbit-500/10 px-8 py-4">
+          <div className="border-b border-space-700 bg-orbit-500/10 px-4 py-4 sm:px-8">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orbit-300">
@@ -355,7 +357,7 @@ export default function Board() {
           </div>
         )}
 
-        <div className="flex-1 overflow-x-auto px-8 py-6">
+        <div className="flex-1 overflow-x-auto px-4 py-6 sm:px-8">
           {columnsLoading && <p className="text-sm text-gray-500">Loading board…</p>}
 
           {sprints && sprints.length > 0 && !activeSprint && (

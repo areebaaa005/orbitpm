@@ -34,7 +34,7 @@ export default function Epics() {
 
   return (
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
-      <div className="mx-auto max-w-3xl px-8 py-10">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-8">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to={`/projects/${projectId}`} className="hover:text-gray-400">
             {project?.name}
@@ -48,7 +48,7 @@ export default function Epics() {
         </p>
 
         {canManage && (
-          <div className="mt-6 card flex items-center gap-2 p-4">
+          <div className="mt-6 card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-2">
             <input
               className="input-field flex-1"
               placeholder="New epic name"
@@ -56,12 +56,12 @@ export default function Epics() {
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             />
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               {EPIC_COLORS.map((c) => (
                 <button
                   key={c}
                   onClick={() => setColor(c)}
-                  className={`h-6 w-6 rounded-full ${color === c ? 'ring-2 ring-offset-1 ring-ink-900' : ''}`}
+                  className={`h-6 w-6 flex-shrink-0 rounded-full ${color === c ? 'ring-2 ring-offset-1 ring-offset-space-900 ring-white' : ''}`}
                   style={{ backgroundColor: c }}
                 />
               ))}
