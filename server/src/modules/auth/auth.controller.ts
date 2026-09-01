@@ -10,7 +10,9 @@ function refreshCookieOptions() {
   return {
     httpOnly: true,
     secure: env.nodeEnv === 'production',
-    sameSite: 'lax' as const,
+    // 'none' is required for cross-domain cookies (Vercel <-> Render) in
+    // production; 'lax' works for local dev where Vite proxies same-origin.
+    sameSite: env.nodeEnv === 'production' ? ('none' as const) : ('lax' as const),
     path: '/api/v1/auth',
     maxAge: env.jwtRefreshExpiresInDays * 24 * 60 * 60 * 1000,
   };
