@@ -97,8 +97,6 @@ const taskSchema = new Schema<ITask>(
 taskSchema.index({ projectId: 1, columnId: 1, order: 1 });
 taskSchema.index({ assigneeIds: 1 });
 taskSchema.index({ dueDate: 1 });
-taskSchema.index({ epicId: 1 });
-taskSchema.index({ sprintId: 1 });
 taskSchema.index({ title: 'text', description: 'text' });
 
 export const Task = model<ITask>('Task', taskSchema);
