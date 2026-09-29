@@ -60,7 +60,7 @@ export function EditProfileModal({ onClose }: { onClose: () => void }) {
                 required
               />
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-red-700">{error}</p>}
             <div className="flex gap-2 pt-1">
               <button type="submit" disabled={isSaving} className="btn-primary flex-1">
                 {isSaving ? 'Saving…' : 'Save changes'}
