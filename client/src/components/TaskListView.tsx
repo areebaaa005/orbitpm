@@ -122,7 +122,7 @@ export function TaskListView({
                     <span className="truncate text-xs text-gray-500">
                       {task.assigneeIds.map((id) => memberMap[id]).filter(Boolean).join(', ') || '—'}
                     </span>
-                    <span className={`text-xs ${isOverdue ? 'font-medium text-red-400' : 'text-gray-500'}`}>
+                    <span className={`text-xs ${isOverdue ? 'font-medium text-red-700' : 'text-gray-500'}`}>
                       {task.dueDate
                         ? new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
                         : '—'}

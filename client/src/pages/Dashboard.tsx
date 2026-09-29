@@ -157,7 +157,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
       )}
 
       {createError && (
-        <p className="mt-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{createError}</p>
+        <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{createError}</p>
       )}
 
       {showForm && (

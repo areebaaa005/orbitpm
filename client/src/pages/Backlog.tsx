@@ -16,7 +16,7 @@ import { SprintTimeline } from '../components/SprintTimeline';
 
 const SPRINT_STATUS_STYLES: Record<string, string> = {
   planned: 'bg-space-800 text-gray-600',
-  active: 'bg-emerald-500/10 text-emerald-400',
+  active: 'bg-emerald-50 text-emerald-700',
   completed: 'bg-space-800 text-gray-400',
 };
 
@@ -112,14 +112,14 @@ export default function Backlog() {
                       {s.status === 'active' && (
                         <button
                           onClick={() => completeSprint.mutate(s._id)}
-                          className="text-xs font-medium text-emerald-600 hover:text-emerald-400"
+                          className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
                         >
                           Complete sprint
                         </button>
                       )}
                       <button
                         onClick={() => deleteSprint.mutate(s._id)}
-                        className="text-xs font-medium text-gray-500 hover:text-red-400"
+                        className="text-xs font-medium text-gray-500 hover:text-red-700"
                       >
                         Delete
                       </button>

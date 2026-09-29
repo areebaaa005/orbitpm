@@ -118,7 +118,7 @@ export default function Analytics() {
                 <StatCard label="Total tasks" value={data.total} />
                 <StatCard label="Completed" value={data.completed} accent="text-emerald-600" />
                 <StatCard label="Open" value={data.open} accent="text-blue-600" />
-                <StatCard label="Overdue" value={data.overdue} accent="text-red-400" />
+                <StatCard label="Overdue" value={data.overdue} accent="text-red-700" />
               </div>
 
               <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">

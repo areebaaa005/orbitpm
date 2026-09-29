@@ -17,9 +17,9 @@ import { useAuth } from '../context/AuthContext';
 const ASSIGNABLE_ROLES: WorkspaceRole[] = ['admin', 'pm', 'member', 'viewer'];
 
 const ROLE_STYLES: Record<WorkspaceRole, string> = {
-  owner: 'bg-amber-500/10 text-amber-400',
+  owner: 'bg-amber-50 text-amber-800',
   admin: 'bg-orbit-500/10 text-orbit-300',
-  pm: 'bg-blue-500/10 text-blue-400',
+  pm: 'bg-blue-50 text-blue-800',
   member: 'bg-space-800 text-gray-700',
   viewer: 'bg-space-800 text-gray-500',
 };
@@ -106,17 +106,17 @@ export default function Members() {
                 {inviteMember.isPending ? 'Sending…' : 'Invite'}
               </button>
             </form>
-            {inviteError && <p className="mt-2 text-sm text-red-400">{inviteError}</p>}
+            {inviteError && <p className="mt-2 text-sm text-red-700">{inviteError}</p>}
             {inviteResult && (
-              <div className="mt-3 rounded-lg bg-emerald-500/10 px-3 py-2.5">
+              <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2.5">
                 {inviteResult.emailSent ? (
-                  <p className="text-sm text-emerald-400">
+                  <p className="text-sm text-emerald-700">
                     ✓ Invitation email sent — they'll get a link to join with the{' '}
                     <strong>{inviteRole}</strong> role.
                   </p>
                 ) : (
                   <>
-                    <p className="text-sm text-amber-400">
+                    <p className="text-sm text-amber-800">
                       Invitation created, but email delivery isn't configured yet.
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
@@ -184,7 +184,7 @@ export default function Members() {
                   {canManage && m.role !== 'owner' && (
                     <button
                       onClick={() => removeMember.mutate(m.userId._id)}
-                      className="rounded-full p-1.5 text-gray-500 hover:bg-red-500/10 hover:text-red-400"
+                      className="rounded-full p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-700"
                       aria-label="Remove member"
                     >
                       ✕
@@ -275,8 +275,8 @@ function DangerZone({
   const canConfirm = confirmText.trim().toUpperCase() === 'DELETE';
 
   return (
-    <div className="mt-6 rounded-xl2 border border-red-500/30 bg-red-500/5 p-5">
-      <h2 className="text-sm font-semibold text-red-400">Danger zone</h2>
+    <div className="mt-6 rounded-xl2 border border-red-200 bg-red-500/5 p-5">
+      <h2 className="text-sm font-semibold text-red-700">Danger zone</h2>
       <p className="mt-1 text-xs text-gray-500">
         Permanently deletes this workspace and everything in it — all projects, tasks, comments,
         and members. This cannot be undone.
@@ -285,14 +285,14 @@ function DangerZone({
       {!expanded ? (
         <button
           onClick={() => setExpanded(true)}
-          className="mt-3 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10"
+          className="mt-3 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
         >
           Delete this workspace
         </button>
       ) : (
         <div className="mt-3">
           <p className="mb-1.5 text-xs text-gray-400">
-            Type <strong className="text-red-400">DELETE</strong> to confirm:
+            Type <strong className="text-red-700">DELETE</strong> to confirm:
           </p>
           <div className="flex gap-2">
             <input
@@ -319,7 +319,7 @@ function DangerZone({
             </button>
           </div>
           {error && (
-            <p role="alert" className="mt-2 text-xs text-red-400">
+            <p role="alert" className="mt-2 text-xs text-red-700">
               {error}
             </p>
           )}

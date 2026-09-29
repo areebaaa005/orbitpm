@@ -59,7 +59,7 @@ export default function AcceptInvite() {
   if (previewError || !preview) {
     return (
       <CenteredCard>
-        <p className="text-sm text-red-400">
+        <p className="text-sm text-red-700">
           This invitation link is invalid or has expired. Ask whoever invited you to send a new one.
         </p>
       </CenteredCard>
@@ -105,7 +105,7 @@ export default function AcceptInvite() {
     <CenteredCard>
       {status === 'success' ? (
         <>
-          <h1 className="text-lg font-semibold text-emerald-400">You're in! 🎉</h1>
+          <h1 className="text-lg font-semibold text-emerald-700">You're in! 🎉</h1>
           <p className="mt-2 text-sm text-gray-400">Redirecting you to your workspaces…</p>
         </>
       ) : (
@@ -116,7 +116,7 @@ export default function AcceptInvite() {
             <strong className="capitalize">{preview.role}</strong>.
           </p>
           {status === 'error' && (
-            <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{errorMessage}</p>
+            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errorMessage}</p>
           )}
           <button
             onClick={handleAccept}

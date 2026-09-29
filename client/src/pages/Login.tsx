@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAcceptInvitation } from '../hooks/useWorkspaceData';
+import { AuthLayout } from '../components/AuthLayout';
 import { OrbitMark } from '../components/OrbitMark';
 import { PENDING_INVITE_KEY } from './AcceptInvite';
 
@@ -38,9 +39,9 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-space-950 px-4">
+    <AuthLayout>
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex items-center justify-center gap-2">
+        <div className="mb-8 flex items-center justify-center gap-2 lg:hidden">
           <OrbitMark size={32} />
           <span className="font-display text-xl font-semibold text-space-50">OrbitPM</span>
         </div>
@@ -74,7 +75,7 @@ export default function Login() {
             </div>
 
             {error && (
-              <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>
+              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
             )}
 
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
@@ -90,6 +91,6 @@ export default function Login() {
           </Link>
         </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

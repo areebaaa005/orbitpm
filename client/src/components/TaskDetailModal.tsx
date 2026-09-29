@@ -247,7 +247,7 @@ export function TaskDetailModal({
               {canDelete && (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="rounded-full p-1.5 text-gray-500 hover:bg-red-500/10 hover:text-red-400"
+                  className="rounded-full p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-700"
                   aria-label="Delete task"
                 >
                   🗑
@@ -264,8 +264,8 @@ export function TaskDetailModal({
           </div>
 
           {confirmDelete && (
-            <div className="border-b border-red-500/30 bg-red-500/10 px-6 py-3">
-              <p className="text-sm text-red-400">Delete this task permanently?</p>
+            <div className="border-b border-red-200 bg-red-50 px-6 py-3">
+              <p className="text-sm text-red-700">Delete this task permanently?</p>
               <div className="mt-2 flex gap-2">
                 <button
                   onClick={handleDelete}
@@ -322,7 +322,7 @@ export function TaskDetailModal({
                 <input
                   type="date"
                   disabled={!canEdit}
-                  className={`input-field text-sm ${isOverdue ? 'text-red-400' : ''}`}
+                  className={`input-field text-sm ${isOverdue ? 'text-red-700' : ''}`}
                   defaultValue={task.dueDate ? task.dueDate.slice(0, 10) : ''}
                   onChange={(e) => handleDueDateChange(e.target.value)}
                 />
@@ -597,7 +597,7 @@ export function TaskDetailModal({
                   />
                 </label>
               )}
-              {uploadError && <p className="mt-1 text-xs text-red-400">{uploadError}</p>}
+              {uploadError && <p className="mt-1 text-xs text-red-700">{uploadError}</p>}
             </div>
 
             <div className="mt-4">
@@ -610,7 +610,7 @@ export function TaskDetailModal({
               </button>
 
               {suggestSubtasks.isError && (
-                <p className="mt-2 text-xs text-red-400">
+                <p className="mt-2 text-xs text-red-700">
                   Couldn't generate suggestions right now. Try again in a moment.
                 </p>
               )}
