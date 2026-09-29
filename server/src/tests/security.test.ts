@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../app';
+import { signAccessToken } from '../utils/jwt';
 
 const app = createApp();
 
@@ -133,5 +134,19 @@ describe('Security: role-based permission enforcement', () => {
       .get(`/api/v1/workspaces/${workspaceId}/projects`)
       .set('Authorization', `Bearer ${viewerToken}`);
     expect(res.status).toBe(200);
+  });
+});
+
+describe('Robustness: malformed ids', () => {
+  const token = signAccessToken({ userId: '507f1f77bcf86cd799439011' });
+
+  it.each([
+    '/api/v1/tasks/not-an-id',
+    '/api/v1/projects/not-an-id/tasks',
+    '/api/v1/workspaces/not-an-id/projects',
+  ])('returns 400 (and does not hang) for %s', async (url) => {
+    const res = await request(app).get(url).set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('INVALID_ID');
   });
 });

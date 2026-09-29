@@ -2,6 +2,8 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { verifyAccessToken } from '../utils/jwt';
 import { Membership } from '../modules/workspaces/membership.model';
+import { Project } from '../modules/projects/project.model';
+import { isObjectId } from '../utils/objectId';
 import { env } from './env';
 
 let io: SocketIOServer | null = null;
@@ -34,20 +36,36 @@ export function initSocket(httpServer: HttpServer): SocketIOServer {
       socket.join(`user:${socket.userId}`);
     }
 
+    // Handlers are async, so every one is wrapped in try/catch: an unhandled
+    // rejection here (e.g. a malformed id) would otherwise crash the process.
     socket.on('join:workspace', async (workspaceId: string) => {
-      const membership = await Membership.findOne({ workspaceId, userId: socket.userId });
-      if (membership) {
-        socket.join(`workspace:${workspaceId}`);
+      try {
+        if (!isObjectId(workspaceId)) return;
+        const membership = await Membership.findOne({ workspaceId, userId: socket.userId });
+        if (membership) {
+          socket.join(`workspace:${workspaceId}`);
+        }
+      } catch {
+        // ignore: the client simply doesn't get joined
       }
     });
 
-    socket.on('join:project', async (payload: { projectId: string; workspaceId: string }) => {
-      const membership = await Membership.findOne({
-        workspaceId: payload.workspaceId,
-        userId: socket.userId,
-      });
-      if (membership) {
-        socket.join(`project:${payload.projectId}`);
+    socket.on('join:project', async (payload: { projectId: string; workspaceId?: string }) => {
+      try {
+        if (!isObjectId(payload?.projectId)) return;
+        // Never trust the workspaceId sent by the client: resolve the project's
+        // real workspace and check membership against THAT one.
+        const project = await Project.findById(payload.projectId).select('workspaceId');
+        if (!project) return;
+        const membership = await Membership.findOne({
+          workspaceId: project.workspaceId,
+          userId: socket.userId,
+        });
+        if (membership) {
+          socket.join(`project:${payload.projectId}`);
+        }
+      } catch {
+        // ignore
       }
     });
 
