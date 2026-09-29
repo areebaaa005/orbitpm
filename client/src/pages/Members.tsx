@@ -42,6 +42,7 @@ export default function Members() {
     null
   );
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const canManage = myRole === 'owner' || myRole === 'admin';
 
@@ -204,10 +205,22 @@ export default function Members() {
             <DangerZone
               onDelete={async () => {
                 if (!workspaceId) return;
-                await deleteWorkspace.mutateAsync(workspaceId);
-                navigate('/');
+                setDeleteError(null);
+                try {
+                  await deleteWorkspace.mutateAsync(workspaceId);
+                  navigate('/');
+                } catch (err: any) {
+                  const status = err?.response?.status;
+                  setDeleteError(
+                    status === 401
+                      ? 'Your session expired. Please sign in again and retry.'
+                      : err?.response?.data?.error?.message ||
+                          'Could not delete the workspace. Please try again.'
+                  );
+                }
               }}
               isDeleting={deleteWorkspace.isPending}
+              error={deleteError}
             />
           </>
         )}
@@ -251,9 +264,11 @@ function WorkspaceSettings({
 function DangerZone({
   onDelete,
   isDeleting,
+  error,
 }: {
   onDelete: () => void;
   isDeleting: boolean;
+  error?: string | null;
 }) {
   const [confirmText, setConfirmText] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -303,6 +318,11 @@ function DangerZone({
               Cancel
             </button>
           </div>
+          {error && (
+            <p role="alert" className="mt-2 text-xs text-red-400">
+              {error}
+            </p>
+          )}
         </div>
       )}
     </div>

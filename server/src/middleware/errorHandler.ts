@@ -20,6 +20,14 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     });
   }
 
+  // Malformed ObjectId (or other cast failure) coming from user input
+  if ((err as any)?.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_ID', message: 'One of the provided ids is invalid', details: null },
+    });
+  }
+
   // Mongoose duplicate key error
   if ((err as any)?.code === 11000) {
     return res.status(409).json({

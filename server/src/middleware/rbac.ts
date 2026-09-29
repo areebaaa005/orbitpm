@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { Membership, WorkspaceRole, ROLE_RANK } from '../modules/workspaces/membership.model';
 import { ApiError } from '../utils/ApiError';
+import { catchAsync } from '../utils/catchAsync';
+import { isObjectId } from '../utils/objectId';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -17,10 +19,13 @@ declare global {
  * loader e.g. project -> workspaceId). Rejects if not a member.
  */
 export function requireWorkspaceMember() {
-  return async (req: Request, _res: Response, next: NextFunction) => {
+  return catchAsync(async (req, _res, next) => {
     const workspaceId = req.params.workspaceId || req.workspaceId;
     if (!workspaceId) {
       return next(ApiError.badRequest('MISSING_WORKSPACE', 'Workspace context is missing'));
+    }
+    if (!isObjectId(workspaceId)) {
+      return next(ApiError.badRequest('INVALID_ID', 'Invalid workspace id'));
     }
 
     const membership = await Membership.findOne({ workspaceId, userId: req.userId });
@@ -30,7 +35,7 @@ export function requireWorkspaceMember() {
 
     req.membership = { role: membership.role, workspaceId: workspaceId.toString() };
     next();
-  };
+  });
 }
 
 /**
