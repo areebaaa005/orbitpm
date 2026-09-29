@@ -40,11 +40,17 @@ import {
   useReorderColumn,
   MemberEntry,
 } from '../hooks/useWorkspaceData';
+import { Bug, Bookmark, CheckSquare, Zap, MoreHorizontal, Search, Sparkles, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../api/socket';
 import { Task, TaskPriority, Column } from '../types';
 
-const TYPE_ICONS: Record<string, string> = { task: '✓', bug: '🐞', story: '📗', spike: '⚡' };
+const TYPE_META: Record<string, { Icon: typeof Bug; bg: string; label: string }> = {
+  task: { Icon: CheckSquare, bg: 'bg-blue-600', label: 'Task' },
+  bug: { Icon: Bug, bg: 'bg-red-600', label: 'Bug' },
+  story: { Icon: Bookmark, bg: 'bg-emerald-600', label: 'Story' },
+  spike: { Icon: Zap, bg: 'bg-purple-600', label: 'Spike' },
+};
 
 const GROUP_BY_LABELS: Record<'none' | 'assignee' | 'priority' | 'epic', string> = {
   none: 'No grouping',
@@ -54,10 +60,10 @@ const GROUP_BY_LABELS: Record<'none' | 'assignee' | 'priority' | 'epic', string>
 };
 
 const PRIORITY_STYLES: Record<TaskPriority, string> = {
-  low: 'bg-space-800 text-gray-600',
-  medium: 'bg-blue-500/10 text-blue-400',
-  high: 'bg-amber-500/10 text-amber-400',
-  urgent: 'bg-red-500/10 text-red-400',
+  low: 'bg-space-800 text-space-200',
+  medium: 'bg-blue-100 text-blue-800',
+  high: 'bg-orange-100 text-orange-800',
+  urgent: 'bg-red-100 text-red-800',
 };
 
 export default function Board() {
@@ -82,6 +88,7 @@ export default function Board() {
   const [openTask, setOpenTask] = useState<Task | null>(null);
   const [showSummary, setShowSummary] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyMine, setOnlyMine] = useState(false);
   const [onlyOverdue, setOnlyOverdue] = useState(false);
@@ -186,64 +193,85 @@ export default function Board() {
   return (
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
       <div className="flex h-full flex-col">
-        <div className="h-1" style={{ backgroundColor: project?.color || '#5B5FEF' }} />
-        <header className="flex flex-wrap items-center gap-2 border-b border-space-700 bg-space-900 px-4 py-3 sm:gap-3 sm:px-8 sm:py-5">
-          <Link to="/" className="hidden text-sm text-gray-500 hover:text-gray-400 sm:inline">
-            Workspaces
-          </Link>
-          <span className="hidden text-gray-500 sm:inline">/</span>
-          <span
-            className="flex-shrink-0 rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-white"
-            style={{ backgroundColor: project?.color || '#5B5FEF' }}
-          >
-            {project?.key}
-          </span>
-          <h1 className="min-w-0 flex-1 truncate text-base font-semibold text-gray-100 sm:text-lg">
-            {project?.name}
-          </h1>
-          {myRole && (
-            <span className="hidden text-xs font-medium text-gray-500 sm:inline">
-              Viewing as <span className="capitalize text-gray-400">{myRole}</span>
+        <header className="flex items-center gap-3 border-b border-space-700 bg-space-900 px-4 py-3 sm:px-8">
+          <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+            <Link to="/" className="hidden text-space-400 hover:text-space-50 sm:inline">
+              Workspaces
+            </Link>
+            <span className="hidden text-space-500 sm:inline">/</span>
+            <span
+              className="flex-shrink-0 rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-white"
+              style={{ backgroundColor: project?.color || '#0C66E4' }}
+            >
+              {project?.key}
             </span>
-          )}
+            <h1 className="min-w-0 truncate text-lg font-semibold text-space-50">{project?.name}</h1>
+          </nav>
           <button
             onClick={() => {
               setShowSummary(true);
               if (projectId) projectSummary.mutate(projectId);
             }}
-            className="btn-secondary text-xs"
+            className="btn-secondary gap-1.5 py-1.5 text-xs"
           >
-            ✨ AI summary
+            <Sparkles size={14} /> AI summary
           </button>
-          {canManage && (
+          <div className="relative">
             <button
-              onClick={() => setConfirmDelete(true)}
-              className="rounded-lg border border-red-500/30 px-3 py-2 text-xs font-semibold text-red-400 transition hover:bg-red-500/10"
+              onClick={() => setShowProjectMenu((v) => !v)}
+              aria-label="Project actions"
+              className="rounded-md border border-space-700 bg-space-900 p-1.5 text-space-300 hover:bg-space-800"
             >
-              Delete
+              <MoreHorizontal size={16} />
             </button>
-          )}
+            {showProjectMenu && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setShowProjectMenu(false)} />
+                <div className="absolute right-0 z-30 mt-1 w-52 rounded-md border border-space-700 bg-space-900 py-1 shadow-popover">
+                  {myRole && (
+                    <p className="px-3 py-1.5 text-xs text-space-400">
+                      Viewing as <span className="capitalize text-space-200">{myRole}</span>
+                    </p>
+                  )}
+                  {canManage && (
+                    <button
+                      onClick={() => {
+                        setShowProjectMenu(false);
+                        setConfirmDelete(true);
+                      }}
+                      className="flex w-full items-center gap-2 border-t border-space-700 px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 size={14} /> Delete project
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </header>
 
         <div className="flex flex-wrap items-center gap-2 border-b border-space-700 bg-space-900 px-4 py-3 sm:px-8">
-          <input
-            className="input-field max-w-xs text-sm"
-            placeholder="🔍 Search tasks…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="relative w-full max-w-[16rem]">
+            <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-space-400" />
+            <input
+              className="input-field pl-8 text-sm"
+              placeholder="Search tasks"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <button
             onClick={() => setOnlyMine((v) => !v)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-              onlyMine ? 'bg-orbit-500 text-white' : 'bg-space-800 text-gray-400 hover:bg-space-700'
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+              onlyMine ? 'bg-orbit-500 text-white' : 'bg-space-800 text-space-200 hover:bg-space-700'
             }`}
           >
             My tasks
           </button>
           <button
             onClick={() => setOnlyOverdue((v) => !v)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-              onlyOverdue ? 'bg-red-500 text-white' : 'bg-space-800 text-gray-400 hover:bg-space-700'
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+              onlyOverdue ? 'bg-red-500 text-white' : 'bg-space-800 text-space-200 hover:bg-space-700'
             }`}
           >
             Overdue
@@ -300,9 +328,9 @@ export default function Board() {
         </div>
 
         {confirmDelete && (
-          <div className="border-b border-red-500/30 bg-red-500/10 px-4 py-4 sm:px-8">
+          <div className="border-b border-red-200 bg-red-50 px-4 py-4 sm:px-8">
             <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-red-400">
+              <p className="text-sm text-red-700">
                 Delete <span className="font-semibold">{project?.name}</span>? It will be archived
                 and removed from your workspace's active projects.
               </p>
@@ -336,7 +364,7 @@ export default function Board() {
                   <p className="text-sm text-gray-400">Generating summary…</p>
                 )}
                 {projectSummary.isError && (
-                  <p className="text-sm text-red-400">
+                  <p className="text-sm text-red-700">
                     Couldn't generate a summary right now. Try again in a moment.
                   </p>
                 )}
@@ -361,7 +389,7 @@ export default function Board() {
           {columnsLoading && <p className="text-sm text-gray-500">Loading board…</p>}
 
           {sprints && sprints.length > 0 && !activeSprint && (
-            <p className="mb-4 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
+            <p className="mb-4 rounded-lg bg-yellow-50 px-3 py-2 text-sm text-yellow-800">
               No active sprint —{' '}
               <Link to={`/projects/${projectId}/backlog`} className="underline">
                 start one from the Backlog
@@ -478,8 +506,8 @@ function BoardColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`flex w-72 flex-shrink-0 flex-col rounded-xl2 p-3 transition ${
-        isOver ? 'bg-orbit-500/10' : 'bg-space-900/70'
+      className={`flex w-72 flex-shrink-0 flex-col rounded-xl2 p-2.5 transition ${
+        isOver ? 'bg-orbit-50' : 'bg-[#EBECF0]'
       }`}
     >
       <div className="mb-3 flex items-center justify-between px-1">
@@ -495,11 +523,11 @@ function BoardColumn({
               onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit()}
             />
           ) : (
-            <span className="truncate text-sm font-semibold text-gray-100">{column.name}</span>
+            <span className="truncate text-xs font-semibold uppercase tracking-wide text-space-200">{column.name}</span>
           )}
         </div>
         <div className="flex flex-shrink-0 items-center gap-1">
-          <span className="text-xs text-gray-500">{tasks.length}</span>
+          <span className="rounded-full bg-space-700 px-1.5 text-[11px] font-medium text-space-200">{tasks.length}</span>
           {canManage && (
             <div className="relative">
               <button
@@ -546,7 +574,7 @@ function BoardColumn({
                       setShowDeleteConfirm(true);
                       setShowMenu(false);
                     }}
-                    className="block w-full px-3 py-1.5 text-left text-xs text-red-400 hover:bg-red-500/10"
+                    className="block w-full px-3 py-1.5 text-left text-xs text-red-700 hover:bg-red-50"
                   >
                     Delete column
                   </button>
@@ -558,15 +586,15 @@ function BoardColumn({
       </div>
 
       {showDeleteConfirm && (
-        <div className="mb-2 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5">
-          <p className="text-xs text-red-400">Delete "{column.name}"?</p>
+        <div className="mb-2 rounded-lg border border-red-200 bg-red-50 p-2.5">
+          <p className="text-xs text-red-700">Delete "{column.name}"?</p>
           {tasks.length > 0 && (
             <>
-              <p className="mt-1 text-xs text-red-400">
+              <p className="mt-1 text-xs text-red-700">
                 {tasks.length} task(s) here — move them first:
               </p>
               <select
-                className="mt-1 w-full rounded border border-red-500/30 px-1.5 py-1 text-xs"
+                className="mt-1 w-full rounded border border-red-200 px-1.5 py-1 text-xs"
                 value={moveTasksTo}
                 onChange={(e) => setMoveTasksTo(e.target.value)}
               >
@@ -635,7 +663,7 @@ function BoardColumn({
       ) : (
         <button
           onClick={() => setIsAdding(true)}
-          className="mt-2 rounded-lg px-2 py-1.5 text-left text-sm text-gray-500 transition hover:bg-space-900 hover:text-gray-400"
+          className="mt-2 rounded-lg px-2 py-1.5 text-left text-sm text-space-300 transition hover:bg-space-700/60 hover:text-space-50"
         >
           + Add task
         </button>
@@ -698,7 +726,7 @@ function TaskCard({
           {task.labels.map((l) => (
             <span
               key={l.name}
-              className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white"
+              className="rounded px-1.5 py-0.5 text-[11px] font-semibold text-white"
               style={{ backgroundColor: l.color }}
             >
               {l.name}
@@ -707,33 +735,41 @@ function TaskCard({
         </div>
       )}
 
-      <p className="flex items-start gap-1 text-sm font-medium text-gray-100">
-        <span className="flex-shrink-0">{TYPE_ICONS[task.type] || '✓'}</span>
-        {task.title}
-      </p>
+      <p className="text-sm font-medium leading-snug text-space-50">{task.title}</p>
 
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+        {(() => {
+          const meta = TYPE_META[task.type] || TYPE_META.task;
+          return (
+            <span
+              title={meta.label}
+              className={`flex h-[18px] w-[18px] items-center justify-center rounded-[4px] text-white ${meta.bg}`}
+            >
+              <meta.Icon size={11} strokeWidth={2.5} />
+            </span>
+          );
+        })()}
         <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${PRIORITY_STYLES[task.priority]}`}
+          className={`rounded px-1.5 py-0.5 text-[11px] font-semibold capitalize ${PRIORITY_STYLES[task.priority]}`}
         >
           {task.priority}
         </span>
         {typeof task.storyPoints === 'number' && (
-          <span className="rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-medium text-indigo-300">
+          <span className="rounded bg-space-800 px-1.5 py-0.5 text-[11px] font-semibold text-space-200">
             {task.storyPoints} pts
           </span>
         )}
         {task.dueDate && (
           <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-              isOverdue ? 'bg-red-500/10 text-red-400' : 'bg-space-800 text-gray-600'
+            className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+              isOverdue ? 'bg-red-100 text-red-800' : 'bg-space-800 text-space-200'
             }`}
           >
             {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </span>
         )}
         {checklistTotal > 0 && (
-          <span className="rounded-full bg-space-800 px-2 py-0.5 text-xs font-medium text-gray-600">
+          <span className="rounded bg-space-800 px-1.5 py-0.5 text-[11px] font-semibold text-space-200">
             ☑ {checklistDone}/{checklistTotal}
           </span>
         )}
