@@ -70,8 +70,8 @@ export function AppLayout({
         aria-current={active ? 'page' : undefined}
         className={`group relative flex h-9 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
           active
-            ? 'bg-orbit-500/15 text-white'
-            : 'text-space-300 hover:bg-space-800 hover:text-white'
+            ? 'bg-gradient-to-r from-orbit-500/30 to-orbit-500/5 text-white ring-1 ring-inset ring-orbit-500/30'
+            : 'text-space-300 hover:bg-white/[0.06] hover:text-white'
         }`}
       >
         {active && (
@@ -80,7 +80,7 @@ export function AppLayout({
         <Icon
           size={18}
           strokeWidth={1.75}
-          className={active ? 'text-orbit-300' : 'text-space-400 group-hover:text-space-200'}
+          className={active ? 'text-orbit-300' : 'text-space-400 group-hover:text-space-100'}
         />
         {item.label}
       </Link>
@@ -95,7 +95,7 @@ export function AppLayout({
 
   const sidebarContent = (
     <>
-      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-space-700/60 px-4">
+      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-white/[0.07] px-4">
         <Link to="/" className="flex items-center gap-2.5" onClick={() => setMobileNavOpen(false)}>
           <OrbitMark size={28} />
           <span className="font-display text-[17px] font-semibold tracking-tight text-white">
@@ -131,13 +131,13 @@ export function AppLayout({
         )}
       </nav>
 
-      <div className="flex-shrink-0 border-t border-space-700/60 p-3">
-        <div className="flex items-center gap-1">
+      <div className="flex-shrink-0 border-t border-white/[0.07] p-3">
+        <div className="flex items-center gap-1 rounded-xl bg-white/[0.04] p-1 ring-1 ring-white/[0.07]">
           <button
             onClick={() => setEditProfileOpen(true)}
-            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-space-800"
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-white/[0.06]"
           >
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orbit-500 text-sm font-semibold text-white">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orbit-500 to-violet-500 text-sm font-semibold text-white">
               {user?.name?.[0]?.toUpperCase() || '?'}
             </div>
             <div className="min-w-0 flex-1">
@@ -161,7 +161,7 @@ export function AppLayout({
   return (
     <div className="flex min-h-screen bg-space-950">
       {/* Desktop sidebar: its own surface + right border so it reads as a panel */}
-      <aside className="sticky top-0 hidden h-screen w-64 flex-shrink-0 flex-col border-r border-space-700/60 bg-space-900 md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 flex-shrink-0 flex-col border-r border-white/[0.07] sidebar-surface md:flex">
         {sidebarContent}
       </aside>
 
@@ -169,14 +169,14 @@ export function AppLayout({
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setMobileNavOpen(false)} />
-          <aside className="relative flex w-64 flex-col border-r border-space-700/60 bg-space-900">
+          <aside className="relative flex w-64 flex-col border-r border-white/[0.07] sidebar-surface">
             {sidebarContent}
           </aside>
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 flex-shrink-0 items-center gap-3 border-b border-space-700/60 bg-space-950 px-4 md:px-6">
+      <div className="content-surface flex min-w-0 flex-1 flex-col">
+        <header className="flex h-14 flex-shrink-0 items-center gap-3 border-b border-white/[0.07] bg-space-950/60 px-4 backdrop-blur md:px-6">
           <button
             onClick={() => setMobileNavOpen(true)}
             className="rounded-md p-1.5 text-space-300 hover:bg-space-800 hover:text-white md:hidden"
@@ -187,11 +187,11 @@ export function AppLayout({
 
           <button
             onClick={openSearch}
-            className="flex h-9 w-full max-w-sm items-center gap-2 rounded-md border border-space-700 bg-space-900 px-3 text-sm text-space-400 transition-colors hover:border-space-600 hover:text-space-200"
+            className="flex h-9 w-full max-w-sm items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-space-400 transition-colors hover:border-white/20 hover:text-space-200"
           >
             <Search size={16} strokeWidth={1.75} />
             <span className="flex-1 truncate text-left">Search…</span>
-            <kbd className="hidden rounded border border-space-700 px-1.5 py-0.5 font-sans text-[10px] text-space-400 sm:inline">
+            <kbd className="hidden rounded border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-sans text-[10px] text-space-400 sm:inline">
               {isMac ? '⌘K' : 'Ctrl K'}
             </kbd>
           </button>
