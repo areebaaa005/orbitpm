@@ -16,13 +16,13 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-orbit-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orbit-600 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-orbit-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-orbit-600 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-space-600 bg-space-800 px-4 py-2 text-sm font-semibold text-gray-100 transition hover:bg-space-700 disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-md border border-space-700 bg-space-900 px-4 py-2 text-sm font-medium text-space-50 transition hover:bg-space-800 disabled:opacity-50;
   }
   .input-field {
-    @apply w-full rounded-lg border border-space-600 bg-space-800 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:border-orbit-500 focus:ring-1 focus:ring-orbit-500;
+    @apply w-full rounded-md border border-space-600 bg-space-900 px-3 py-2 text-sm text-space-50 placeholder:text-space-400 transition hover:bg-space-950 focus:border-orbit-500 focus:ring-1 focus:ring-orbit-500;
   }
   .card {
     @apply rounded-xl2 border border-space-700 bg-space-900 shadow-card;
