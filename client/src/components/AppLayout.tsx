@@ -5,6 +5,7 @@ import { NotificationBell } from './NotificationBell';
 import { EditProfileModal } from './EditProfileModal';
 import { CommandPalette } from './CommandPalette';
 import { useAuth } from '../context/AuthContext';
+import { useProject } from '../hooks/useWorkspaceData';
 
 import type { LucideIcon } from 'lucide-react';
 import { LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
@@ -34,6 +35,7 @@ export function AppLayout({
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { data: project } = useProject(projectId);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
 
@@ -70,17 +72,17 @@ export function AppLayout({
         aria-current={active ? 'page' : undefined}
         className={`group relative flex h-9 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors ${
           active
-            ? 'bg-orbit-50 text-orbit-600'
-            : 'text-space-300 hover:bg-space-800 hover:text-space-50'
+            ? 'bg-white/[0.12] text-white'
+            : 'text-slate-300 hover:bg-white/[0.07] hover:text-white'
         }`}
       >
         {active && (
-          <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-orbit-500" />
+          <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-[#579DFF]" />
         )}
         <Icon
           size={18}
           strokeWidth={1.75}
-          className={active ? 'text-orbit-300' : 'text-space-400 group-hover:text-space-200'}
+          className={active ? 'text-[#85B8FF]' : 'text-slate-400 group-hover:text-white'}
         />
         {item.label}
       </Link>
@@ -88,28 +90,43 @@ export function AppLayout({
   };
 
   const sectionLabel = (text: string) => (
-    <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-space-400">
+    <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
       {text}
     </p>
   );
 
   const sidebarContent = (
     <>
-      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-space-700 px-4">
+      <div className="flex h-14 flex-shrink-0 items-center justify-between border-b border-white/10 px-4">
         <Link to="/" className="flex items-center gap-2.5" onClick={() => setMobileNavOpen(false)}>
           <OrbitMark size={28} />
-          <span className="font-display text-[17px] font-semibold tracking-tight text-space-50">
+          <span className="font-display text-[17px] font-semibold tracking-tight text-white">
             OrbitPM
           </span>
         </Link>
         <button
           onClick={() => setMobileNavOpen(false)}
-          className="rounded-md p-1.5 text-space-300 hover:bg-space-800 hover:text-space-50 md:hidden"
+          className="rounded-md p-1.5 text-slate-300 hover:bg-white/10 hover:text-white md:hidden"
           aria-label="Close menu"
         >
           <X size={18} />
         </button>
       </div>
+
+      {project && (
+        <div className="flex items-center gap-3 border-b border-white/10 px-4 py-4">
+          <span
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-xs font-semibold text-white"
+            style={{ backgroundColor: project.color }}
+          >
+            {project.key.slice(0, 3)}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">{project.name}</p>
+            <p className="text-xs text-slate-400">Software project</p>
+          </div>
+        </div>
+      )}
 
       <nav aria-label="Main" className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
         <div className="space-y-0.5">
@@ -131,25 +148,25 @@ export function AppLayout({
         )}
       </nav>
 
-      <div className="flex-shrink-0 border-t border-space-700 p-3">
-        <div className="flex items-center gap-1 rounded-lg border border-space-700 bg-space-950 p-1">
+      <div className="flex-shrink-0 border-t border-white/10 p-3">
+        <div className="flex items-center gap-1 rounded-lg bg-white/[0.07] p-1">
           <button
             onClick={() => setEditProfileOpen(true)}
-            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-space-800"
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-white/10"
           >
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orbit-500 text-sm font-semibold text-white">
               {user?.name?.[0]?.toUpperCase() || '?'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-space-50">{user?.name}</p>
-              <p className="truncate text-xs text-space-400">{user?.email}</p>
+              <p className="truncate text-sm font-medium text-white">{user?.name}</p>
+              <p className="truncate text-xs text-slate-400">{user?.email}</p>
             </div>
           </button>
           <button
             onClick={handleLogout}
             title="Sign out"
             aria-label="Sign out"
-            className="rounded-md p-2 text-space-400 transition-colors hover:bg-space-800 hover:text-space-50"
+            className="rounded-md p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
           >
             <LogOut size={17} strokeWidth={1.75} />
           </button>
@@ -161,7 +178,7 @@ export function AppLayout({
   return (
     <div className="flex min-h-screen bg-space-950">
       {/* Desktop sidebar: its own surface + right border so it reads as a panel */}
-      <aside className="sticky top-0 hidden h-screen w-64 flex-shrink-0 flex-col border-r border-space-700 bg-space-900 md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 flex-shrink-0 flex-col border-r border-white/10 bg-[#091E42] md:flex">
         {sidebarContent}
       </aside>
 
@@ -169,7 +186,7 @@ export function AppLayout({
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setMobileNavOpen(false)} />
-          <aside className="relative flex w-64 flex-col border-r border-space-700 bg-space-900">
+          <aside className="relative flex w-64 flex-col border-r border-white/10 bg-[#091E42]">
             {sidebarContent}
           </aside>
         </div>
