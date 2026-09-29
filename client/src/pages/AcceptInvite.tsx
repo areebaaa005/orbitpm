@@ -137,7 +137,7 @@ function CenteredCard({ children }: { children: React.ReactNode }) {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-2">
           <OrbitMark size={32} />
-          <span className="font-display text-xl font-semibold text-white">OrbitPM</span>
+          <span className="font-display text-xl font-semibold text-space-50">OrbitPM</span>
         </div>
         <div className="card p-8">{children}</div>
       </div>

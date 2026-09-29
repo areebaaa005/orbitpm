@@ -61,7 +61,7 @@ export default function Epics() {
                 <button
                   key={c}
                   onClick={() => setColor(c)}
-                  className={`h-6 w-6 flex-shrink-0 rounded-full ${color === c ? 'ring-2 ring-offset-1 ring-offset-space-900 ring-white' : ''}`}
+                  className={`h-6 w-6 flex-shrink-0 rounded-full ${color === c ? 'ring-2 ring-offset-1 ring-offset-space-900 ring-space-50' : ''}`}
                   style={{ backgroundColor: c }}
                 />
               ))}

@@ -42,7 +42,7 @@ export default function Login() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-2">
           <OrbitMark size={32} />
-          <span className="font-display text-xl font-semibold text-white">OrbitPM</span>
+          <span className="font-display text-xl font-semibold text-space-50">OrbitPM</span>
         </div>
 
         <div className="card p-8">
@@ -85,7 +85,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-sm text-space-300">
           Don't have an account?{' '}
-          <Link to="/register" className="font-medium text-orbit-300 hover:text-white">
+          <Link to="/register" className="font-medium text-orbit-300 hover:text-space-50">
             Create one
           </Link>
         </p>

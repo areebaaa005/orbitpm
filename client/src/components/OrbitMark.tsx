@@ -24,7 +24,7 @@ export function OrbitMark({ size = 28, className = '' }: OrbitMarkProps) {
         height="24"
         rx="7"
         transform="rotate(-15 16 16)"
-        fill="#5B5FEF"
+        fill="#0C66E4"
       />
       <circle cx="16" cy="16" r="4" fill="white" />
       <circle cx="24" cy="9" r="2.5" fill="#F59E0B" />

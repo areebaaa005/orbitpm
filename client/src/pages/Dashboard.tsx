@@ -28,7 +28,7 @@ export default function Dashboard() {
   return (
     <AppLayout>
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-white">Your workspaces</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-space-50">Your workspaces</h1>
         <p className="mt-2 text-sm text-space-300">
           A workspace is where your team, projects, and boards live together.
         </p>
@@ -40,27 +40,27 @@ export default function Dashboard() {
             <button
               key={m.workspace._id}
               onClick={() => setActiveWorkspaceId(m.workspace._id)}
-              className={`card group flex items-center gap-3 p-4 text-left transition hover:-translate-y-0.5 hover:border-white/20 ${
-                activeWorkspaceId === m.workspace._id ? 'shadow-glow !border-orbit-500/60' : ''
+              className={`card group flex items-center gap-3 p-4 text-left transition hover:-translate-y-0.5 hover:border-space-600 ${
+                activeWorkspaceId === m.workspace._id ? 'shadow-glow !border-orbit-500' : ''
               }`}
             >
-              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orbit-500 to-violet-500 text-lg font-semibold text-white">
+              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-orbit-500 text-lg font-semibold text-white">
                 {m.workspace.name?.[0]?.toUpperCase()}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium text-white">{m.workspace.name}</span>
-                <span className="mt-1 inline-block rounded-full bg-orbit-500/15 px-2 py-0.5 text-xs font-medium capitalize text-orbit-300">
+                <span className="block truncate font-medium text-space-50">{m.workspace.name}</span>
+                <span className="mt-1 inline-block rounded-full bg-orbit-50 px-2 py-0.5 text-xs font-medium capitalize text-orbit-600">
                   {m.role}
                 </span>
               </span>
               <ArrowUpRight
                 size={18}
-                className="flex-shrink-0 text-space-500 transition group-hover:text-white"
+                className="flex-shrink-0 text-space-500 transition group-hover:text-space-50"
               />
             </button>
           ))}
 
-          <div className="flex flex-col gap-2 rounded-xl2 border border-dashed border-white/15 p-4">
+          <div className="flex flex-col gap-2 rounded-xl2 border border-dashed border-space-600 p-4">
             <input
               className="input-field"
               placeholder="New workspace name"
@@ -167,7 +167,7 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
             <button
               key={c}
               onClick={() => setColor(c)}
-              className={`h-6 w-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-2 ring-offset-space-900 ring-white' : ''}`}
+              className={`h-6 w-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-2 ring-offset-space-900 ring-space-50' : ''}`}
               style={{ backgroundColor: c }}
               aria-label={`Select color ${c}`}
             />

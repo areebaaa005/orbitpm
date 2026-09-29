@@ -471,7 +471,7 @@ export function TaskDetailModal({
                       <button
                         key={c}
                         onClick={() => setNewLabelColor(c)}
-                        className={`h-5 w-5 rounded-full ${newLabelColor === c ? 'ring-2 ring-offset-1 ring-offset-space-900 ring-white' : ''}`}
+                        className={`h-5 w-5 rounded-full ${newLabelColor === c ? 'ring-2 ring-offset-1 ring-offset-space-900 ring-space-50' : ''}`}
                         style={{ backgroundColor: c }}
                       />
                     ))}
