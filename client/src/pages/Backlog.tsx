@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { ListTodo } from 'lucide-react';
+import { EmptyState } from '../components/EmptyState';
 import { useParams, Link } from 'react-router-dom';
 import {
   useProject,
@@ -129,7 +131,11 @@ export default function Backlog() {
               );
             })}
             {sprints?.length === 0 && (
-              <p className="text-sm text-gray-500">No sprints yet — create one below.</p>
+              <EmptyState
+                icon={ListTodo}
+                title="No sprints yet"
+                description="Create a sprint below, then plan work into it from the backlog."
+              />
             )}
           </div>
 

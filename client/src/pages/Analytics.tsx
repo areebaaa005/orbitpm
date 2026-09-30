@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { RowsSkeleton } from '../components/Skeleton';
 import { jsPDF } from 'jspdf';
 import {
   BarChart,
@@ -110,7 +111,7 @@ export default function Analytics() {
         </header>
 
         <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-          {isLoading && <p className="text-sm text-gray-500">Loading analytics…</p>}
+          {isLoading && <RowsSkeleton rows={4} />}
 
           {data && (
             <>

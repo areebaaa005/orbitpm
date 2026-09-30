@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { BoardSkeleton } from '../components/Skeleton';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -386,7 +387,7 @@ export default function Board() {
         )}
 
         <div className="flex-1 overflow-x-auto px-4 py-6 sm:px-8">
-          {columnsLoading && <p className="text-sm text-gray-500">Loading board…</p>}
+          {columnsLoading && <BoardSkeleton />}
 
           {sprints && sprints.length > 0 && !activeSprint && (
             <p className="mb-4 rounded-lg bg-yellow-50 px-3 py-2 text-sm text-yellow-800">

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Zap } from 'lucide-react';
+import { EmptyState } from '../components/EmptyState';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -105,7 +107,11 @@ export default function Epics() {
             })}
           </AnimatePresence>
           {epics?.length === 0 && (
-            <p className="text-sm text-gray-500">No epics yet. Create one above to get started.</p>
+            <EmptyState
+              icon={Zap}
+              title="No epics yet"
+              description="Epics group related tasks under a bigger goal. Create one above to get started."
+            />
           )}
         </div>
       </div>
