@@ -6,9 +6,11 @@ import { EditProfileModal } from './EditProfileModal';
 import { CommandPalette } from './CommandPalette';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../hooks/useWorkspaceData';
+import { useHotkeys } from '../hooks/useHotkeys';
+import { ShortcutsHelp } from './ShortcutsHelp';
 
 import type { LucideIcon } from 'lucide-react';
-import { LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
+import { Keyboard, LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -36,6 +38,13 @@ export function AppLayout({
   const navigate = useNavigate();
   const location = useLocation();
   const { data: project } = useProject(projectId);
+  const [helpOpen, setHelpOpen] = useState(false);
+  useHotkeys({
+    '?': (e) => {
+      e.preventDefault();
+      setHelpOpen((o) => !o);
+    },
+  });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
 
@@ -213,7 +222,15 @@ export function AppLayout({
             </kbd>
           </button>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              onClick={() => setHelpOpen(true)}
+              title="Keyboard shortcuts (?)"
+              aria-label="Keyboard shortcuts"
+              className="hidden rounded-md p-2 text-space-400 transition-colors hover:bg-space-800 hover:text-space-50 md:block"
+            >
+              <Keyboard size={18} strokeWidth={1.75} />
+            </button>
             <NotificationBell />
           </div>
         </header>
@@ -222,6 +239,7 @@ export function AppLayout({
 
       {editProfileOpen && <EditProfileModal onClose={() => setEditProfileOpen(false)} />}
       <CommandPalette workspaceId={workspaceId} />
+      <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} mod={isMac ? '⌘' : 'Ctrl'} />
     </div>
   );
 }

@@ -44,6 +44,7 @@ import {
 import { Bug, Bookmark, CheckSquare, Zap, MoreHorizontal, Search, Sparkles, Trash2 } from 'lucide-react';
 import { BoardFilters, usePersistentFilters } from '../components/BoardFilters';
 import { PriorityQuickEdit, AssigneeQuickEdit } from '../components/TaskQuickEdit';
+import { useHotkeys } from '../hooks/useHotkeys';
 import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../api/socket';
 import { Task, TaskPriority, Column } from '../types';
@@ -100,6 +101,28 @@ export default function Board() {
   const [groupBy, setGroupBy] = useState<'none' | 'assignee' | 'priority' | 'epic'>('none');
   const [showGroupByMenu, setShowGroupByMenu] = useState(false);
   const { data: epics } = useEpics(projectId);
+
+  // Shortcuts are paused while a task panel is open
+  useHotkeys(
+    {
+      '/': (e) => {
+        e.preventDefault();
+        document.getElementById('board-search')?.focus();
+      },
+      c: (e) => {
+        e.preventDefault();
+        const first = columns?.[0];
+        if (!first) return;
+        const fire = () => window.dispatchEvent(new CustomEvent('orbitpm:new-task', { detail: first._id }));
+        if (viewMode !== 'kanban') {
+          setViewMode('kanban');
+          setTimeout(fire, 80);
+        } else fire();
+      },
+      m: () => setOnlyMine((v) => !v),
+    },
+    !openTask
+  );
 
   const activeSprint = sprints?.find((s) => s.status === 'active');
 
@@ -261,6 +284,7 @@ export default function Board() {
           <div className="relative w-full max-w-[16rem]">
             <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-space-400" />
             <input
+              id="board-search"
               className="input-field pl-8 text-sm"
               placeholder="Search tasks"
               value={searchQuery}
@@ -478,6 +502,13 @@ function BoardColumn({
   const deleteColumn = useDeleteColumn(projectId);
   const reorderColumn = useReorderColumn(projectId);
   const [isAdding, setIsAdding] = useState(false);
+  useEffect(() => {
+    const onNewTask = (e: Event) => {
+      if ((e as CustomEvent).detail === column._id) setIsAdding(true);
+    };
+    window.addEventListener('orbitpm:new-task', onNewTask);
+    return () => window.removeEventListener('orbitpm:new-task', onNewTask);
+  }, [column._id]);
   const [title, setTitle] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(column.name);
