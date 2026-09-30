@@ -15,6 +15,14 @@ projectAnalyticsRouter.get(
   })
 );
 
+projectAnalyticsRouter.get(
+  '/insights',
+  catchAsync(async (req: Request, res: Response) => {
+    const insights = await analyticsService.getProjectInsights(req.params.projectId);
+    res.status(200).json({ success: true, data: insights });
+  })
+);
+
 export const workspaceAnalyticsRouter = Router({ mergeParams: true });
 workspaceAnalyticsRouter.use(requireAuth, requireWorkspaceMember());
 workspaceAnalyticsRouter.get(

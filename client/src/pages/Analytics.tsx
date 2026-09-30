@@ -16,6 +16,7 @@ import {
   Line,
 } from 'recharts';
 import { AppLayout } from '../components/AppLayout';
+import { SprintInsights } from '../components/SprintInsights';
 import { useProject, useProjectAnalytics } from '../hooks/useWorkspaceData';
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -121,6 +122,8 @@ export default function Analytics() {
                 <StatCard label="Open" value={data.open} accent="text-blue-600" />
                 <StatCard label="Overdue" value={data.overdue} accent="text-red-700" />
               </div>
+
+              <SprintInsights projectId={projectId} />
 
               <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="card p-5">
