@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { FolderKanban } from 'lucide-react';
+import { CardGridSkeleton } from '../components/Skeleton';
+import { EmptyState } from '../components/EmptyState';
 import { ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -33,7 +36,11 @@ export default function Dashboard() {
           A workspace is where your team, projects, and boards live together.
         </p>
 
-        {isLoading && <p className="mt-6 text-sm text-gray-500">Loading…</p>}
+        {isLoading && (
+          <div className="mt-6">
+            <CardGridSkeleton count={2} />
+          </div>
+        )}
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {workspaces?.map((m) => (
@@ -175,12 +182,20 @@ function ProjectsSection({ workspaceId }: { workspaceId: string }) {
         </div>
       )}
 
-      {isLoading && <p className="mt-4 text-sm text-gray-500">Loading projects…</p>}
+      {isLoading && (
+        <div className="mt-4">
+          <CardGridSkeleton count={3} />
+        </div>
+      )}
 
       {projects && projects.length === 0 && !showForm && (
-        <p className="mt-4 text-sm text-gray-500">
-          No projects yet. Create one to start building your board.
-        </p>
+        <div className="mt-4">
+          <EmptyState
+            icon={FolderKanban}
+            title="No projects yet"
+            description="Create your first project to start building a board."
+          />
+        </div>
       )}
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

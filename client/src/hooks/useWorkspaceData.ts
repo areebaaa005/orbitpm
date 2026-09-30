@@ -17,6 +17,7 @@ export function useWorkspaces() {
 export function useCreateWorkspace() {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Workspace created' },
     mutationFn: async (name: string) => {
       const res = await api.post('/workspaces', { name });
       return res.data.data.workspace;
@@ -41,6 +42,7 @@ export function useProjects(workspaceId: string | undefined) {
 export function useCreateProject(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Project created' },
     mutationFn: async (input: { name: string; key: string; description?: string; color?: string }) => {
       const res = await api.post(`/workspaces/${workspaceId}/projects`, input);
       return res.data.data.project as Project;
@@ -91,6 +93,7 @@ export function useTasks(projectId: string | undefined, filters?: { sprintId?: s
 export function useCreateTask(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Task created' },
     mutationFn: async (input: {
       columnId: string;
       title: string;
@@ -288,6 +291,7 @@ export function useMembers(workspaceId: string | undefined) {
 export function useInviteMember(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { silent: true },
     mutationFn: async (input: { email: string; role: WorkspaceRole }) => {
       const res = await api.post(`/workspaces/${workspaceId}/invitations`, input);
       return res.data.data.invitation;
@@ -299,6 +303,7 @@ export function useInviteMember(workspaceId: string | undefined) {
 export function useUpdateMemberRole(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Role updated' },
     mutationFn: async ({ userId, role }: { userId: string; role: WorkspaceRole }) => {
       await api.patch(`/workspaces/${workspaceId}/members/${userId}`, { role });
     },
@@ -309,6 +314,7 @@ export function useUpdateMemberRole(workspaceId: string | undefined) {
 export function useRemoveMember(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Member removed' },
     mutationFn: async (userId: string) => {
       await api.delete(`/workspaces/${workspaceId}/members/${userId}`);
     },
@@ -319,6 +325,7 @@ export function useRemoveMember(workspaceId: string | undefined) {
 export function useUpdateWorkspace(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Workspace renamed' },
     mutationFn: async (name: string) => {
       const res = await api.patch(`/workspaces/${workspaceId}`, { name });
       return res.data.data.workspace;
@@ -330,6 +337,7 @@ export function useUpdateWorkspace(workspaceId: string | undefined) {
 export function useDeleteWorkspace() {
   const qc = useQueryClient();
   return useMutation({
+    meta: { silent: true, successMessage: 'Workspace deleted' },
     mutationFn: async (workspaceId: string) => {
       await api.delete(`/workspaces/${workspaceId}`);
     },
@@ -340,6 +348,7 @@ export function useDeleteWorkspace() {
 export function useDeleteTask(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Task deleted' },
     mutationFn: async (taskId: string) => {
       await api.delete(`/tasks/${taskId}`);
     },
@@ -350,6 +359,7 @@ export function useDeleteTask(projectId: string | undefined) {
 export function useArchiveProject(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Project deleted' },
     mutationFn: async (projectId: string) => {
       await api.delete(`/projects/${projectId}`);
     },
@@ -371,6 +381,7 @@ export function useUpdateColumn(projectId: string | undefined) {
 export function useDeleteColumn(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Column deleted' },
     mutationFn: async ({ columnId, moveTasksTo }: { columnId: string; moveTasksTo?: string }) => {
       await api.delete(`/projects/${projectId}/columns/${columnId}`, {
         params: moveTasksTo ? { moveTasksTo } : undefined,
@@ -472,6 +483,7 @@ export function useEpics(projectId: string | undefined) {
 export function useCreateEpic(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Epic created' },
     mutationFn: async (input: { name: string; description?: string; color?: string }) => {
       const res = await api.post(`/projects/${projectId}/epics`, input);
       return res.data.data.epic as Epic;
@@ -494,6 +506,7 @@ export function useUpdateEpic(projectId: string | undefined) {
 export function useDeleteEpic(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Epic deleted' },
     mutationFn: async (epicId: string) => {
       await api.delete(`/projects/${projectId}/epics/${epicId}`);
     },
@@ -517,6 +530,7 @@ export function useSprints(projectId: string | undefined) {
 export function useCreateSprint(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Sprint created' },
     mutationFn: async (input: { name: string; goal?: string; startDate?: string; endDate?: string }) => {
       const res = await api.post(`/projects/${projectId}/sprints`, input);
       return res.data.data.sprint as Sprint;
@@ -556,6 +570,7 @@ export function useCompleteSprint(projectId: string | undefined) {
 export function useDeleteSprint(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Sprint deleted' },
     mutationFn: async (sprintId: string) => {
       await api.delete(`/projects/${projectId}/sprints/${sprintId}`);
     },

@@ -1,4 +1,5 @@
 import { useState, FormEvent } from 'react';
+import { RowsSkeleton } from '../components/Skeleton';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppLayout } from '../components/AppLayout';
@@ -133,7 +134,7 @@ export default function Members() {
         )}
 
         <div className="card mt-6 divide-y divide-space-800">
-          {isLoading && <p className="px-5 py-4 text-sm text-gray-500">Loading members…</p>}
+          {isLoading && <RowsSkeleton rows={3} />}
           <AnimatePresence>
             {members?.map((m) => (
               <motion.div
