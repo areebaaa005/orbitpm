@@ -43,6 +43,7 @@ import {
 } from '../hooks/useWorkspaceData';
 import { Bug, Bookmark, CheckSquare, Zap, MoreHorizontal, Search, Sparkles, Trash2 } from 'lucide-react';
 import { BoardFilters, usePersistentFilters } from '../components/BoardFilters';
+import { PriorityQuickEdit, AssigneeQuickEdit } from '../components/TaskQuickEdit';
 import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../api/socket';
 import { Task, TaskPriority, Column } from '../types';
@@ -714,7 +715,6 @@ function TaskCard({
   members?: MemberEntry[];
   dragging?: boolean;
 }) {
-  const assignees = members?.filter((m) => task.assigneeIds.includes(m.userId._id)) || [];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
   const checklistTotal = task.checklist?.length || 0;
   const checklistDone = task.checklist?.filter((c) => c.done).length || 0;
@@ -726,7 +726,7 @@ function TaskCard({
       animate={{ opacity: 1, y: 0 }}
       whileHover={dragging ? {} : { y: -2, boxShadow: '0 4px 12px rgba(15,20,36,0.08)' }}
       transition={{ duration: 0.15 }}
-      className={`card cursor-pointer p-3 ${dragging ? 'rotate-2 shadow-popover' : ''}`}
+      className={`card group cursor-pointer p-3 ${dragging ? 'rotate-2 shadow-popover' : ''}`}
     >
       {task.labels?.length > 0 && (
         <div className="mb-1.5 flex flex-wrap gap-1">
@@ -756,11 +756,11 @@ function TaskCard({
             </span>
           );
         })()}
-        <span
+        <PriorityQuickEdit
+          task={task}
+          interactive={!dragging}
           className={`rounded px-1.5 py-0.5 text-[11px] font-semibold capitalize ${PRIORITY_STYLES[task.priority]}`}
-        >
-          {task.priority}
-        </span>
+        />
         {typeof task.storyPoints === 'number' && (
           <span className="rounded bg-space-800 px-1.5 py-0.5 text-[11px] font-semibold text-space-200">
             {task.storyPoints} pts
@@ -782,19 +782,7 @@ function TaskCard({
         )}
       </div>
 
-      {assignees.length > 0 && (
-        <div className="mt-2 flex -space-x-1.5">
-          {assignees.slice(0, 4).map((m) => (
-            <span
-              key={m.userId._id}
-              title={m.userId.name}
-              className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-orbit-500 text-[10px] font-semibold text-white"
-            >
-              {m.userId.name?.[0]?.toUpperCase()}
-            </span>
-          ))}
-        </div>
-      )}
+      <AssigneeQuickEdit task={task} members={members} interactive={!dragging} />
     </motion.div>
   );
 }
