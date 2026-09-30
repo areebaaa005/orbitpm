@@ -42,6 +42,7 @@ import {
   MemberEntry,
 } from '../hooks/useWorkspaceData';
 import { Bug, Bookmark, CheckSquare, Zap, MoreHorizontal, Search, Sparkles, Trash2 } from 'lucide-react';
+import { BoardFilters, usePersistentFilters } from '../components/BoardFilters';
 import { useAuth } from '../context/AuthContext';
 import { getSocket } from '../api/socket';
 import { Task, TaskPriority, Column } from '../types';
@@ -93,6 +94,7 @@ export default function Board() {
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyMine, setOnlyMine] = useState(false);
   const [onlyOverdue, setOnlyOverdue] = useState(false);
+  const [filters, setFilters] = usePersistentFilters(projectId);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [groupBy, setGroupBy] = useState<'none' | 'assignee' | 'priority' | 'epic'>('none');
   const [showGroupByMenu, setShowGroupByMenu] = useState(false);
@@ -111,9 +113,12 @@ export default function Board() {
       if (searchQuery && !t.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (onlyMine && !(user && t.assigneeIds.includes(user.id))) return false;
       if (onlyOverdue && !(t.dueDate && new Date(t.dueDate) < new Date())) return false;
+      if (filters.priorities.length && !filters.priorities.includes(t.priority)) return false;
+      if (filters.assigneeIds.length && !t.assigneeIds.some((id) => filters.assigneeIds.includes(id))) return false;
+      if (filters.labels.length && !t.labels.some((l) => filters.labels.includes(l.name))) return false;
       return true;
     });
-  }, [tasks, searchQuery, onlyMine, onlyOverdue, user, sprints, activeSprint]);
+  }, [tasks, searchQuery, onlyMine, onlyOverdue, filters, user, sprints, activeSprint]);
 
   async function handleDeleteProject() {
     if (!projectId) return;
@@ -277,6 +282,7 @@ export default function Board() {
           >
             Overdue
           </button>
+          <BoardFilters filters={filters} onChange={setFilters} members={members} tasks={tasks} />
 
           <div className="ml-auto flex items-center gap-2">
             {viewMode === 'list' && (
