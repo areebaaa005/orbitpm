@@ -1,4 +1,5 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
+import { Trash2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -219,6 +220,14 @@ export function TaskDetailModal({
   const currentType = TYPES.find((t) => t.value === task.type) || TYPES[0];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -233,7 +242,7 @@ export function TaskDetailModal({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 40, opacity: 0 }}
           transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-          className="h-full w-full max-w-lg overflow-y-auto bg-space-900 shadow-popover"
+          className="h-full w-full max-w-lg overflow-y-auto bg-space-900 shadow-popover lg:max-w-4xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b border-space-700 px-6 py-4">
@@ -247,18 +256,18 @@ export function TaskDetailModal({
               {canDelete && (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="rounded-full p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-700"
+                  className="rounded-md p-1.5 text-space-400 hover:bg-red-50 hover:text-red-700"
                   aria-label="Delete task"
                 >
-                  🗑
+                  <Trash2 size={17} />
                 </button>
               )}
               <button
                 onClick={onClose}
-                className="rounded-full p-1 text-gray-500 hover:bg-space-800 hover:text-gray-100"
+                className="rounded-md p-1.5 text-space-400 hover:bg-space-800 hover:text-space-50"
                 aria-label="Close"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
           </div>
@@ -284,204 +293,9 @@ export function TaskDetailModal({
             </div>
           )}
 
-          <div className="px-6 py-5">
+          <div className="px-6 py-5 lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-8">
+            <div className="min-w-0">
             <h2 className="text-lg font-semibold text-gray-100">{task.title}</h2>
-
-            {/* Meta grid: type, priority, story points, due date */}
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-400">Type</label>
-                <select
-                  disabled={!canEdit}
-                  className="input-field text-sm"
-                  value={task.type}
-                  onChange={(e) => handleTypeChange(e.target.value as TaskType)}
-                >
-                  {TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.icon} {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-400">Story points</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  disabled={!canEdit}
-                  className="input-field text-sm"
-                  placeholder="—"
-                  defaultValue={task.storyPoints ?? ''}
-                  onBlur={(e) => handleStoryPointsChange(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-400">Due date</label>
-                <input
-                  type="date"
-                  disabled={!canEdit}
-                  className={`input-field text-sm ${isOverdue ? 'text-red-700' : ''}`}
-                  defaultValue={task.dueDate ? task.dueDate.slice(0, 10) : ''}
-                  onChange={(e) => handleDueDateChange(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-400">Epic</label>
-                <select
-                  disabled={!canEdit}
-                  className="input-field text-sm"
-                  value={task.epicId || ''}
-                  onChange={(e) => handleEpicChange(e.target.value)}
-                >
-                  <option value="">No epic</option>
-                  {epics?.map((e) => (
-                    <option key={e._id} value={e._id}>
-                      {e.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {sprints && sprints.length > 0 && (
-              <div className="mt-3">
-                <label className="mb-1 block text-xs font-medium text-gray-400">Sprint</label>
-                <select
-                  disabled={!canEdit}
-                  className="input-field text-sm"
-                  value={task.sprintId || ''}
-                  onChange={(e) => handleSprintChange(e.target.value)}
-                >
-                  <option value="">Backlog (no sprint)</option>
-                  {sprints.map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.name} {s.status === 'active' ? '(active)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-gray-400">Priority</label>
-              <div className="flex gap-1.5">
-                {PRIORITIES.map((p) => (
-                  <button
-                    key={p}
-                    disabled={!canEdit}
-                    onClick={() => handlePriorityChange(p)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
-                      task.priority === p
-                        ? 'bg-orbit-500 text-white'
-                        : 'bg-space-800 text-gray-400 hover:bg-space-700'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Assignees */}
-            <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-gray-400">Assignees</label>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {assignedMembers.map((m) => (
-                  <span
-                    key={m.userId._id}
-                    className="flex items-center gap-1 rounded-full bg-orbit-500/10 py-1 pl-1 pr-2 text-xs font-medium text-orbit-300"
-                  >
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orbit-500 text-[10px] font-semibold text-white">
-                      {m.userId.name?.[0]?.toUpperCase()}
-                    </span>
-                    {m.userId.name}
-                  </span>
-                ))}
-                {canEdit && (
-                  <button
-                    onClick={() => setShowAssigneePicker((s) => !s)}
-                    className="rounded-full border border-dashed border-space-600 px-2 py-1 text-xs text-gray-500 hover:border-orbit-400 hover:text-orbit-600"
-                  >
-                    + Add
-                  </button>
-                )}
-              </div>
-              {showAssigneePicker && (
-                <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-space-700 p-1.5">
-                  {members?.map((m) => (
-                    <label
-                      key={m.userId._id}
-                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-space-800"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={task.assigneeIds.includes(m.userId._id)}
-                        onChange={() => toggleAssignee(m.userId._id)}
-                      />
-                      {m.userId.name}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Labels */}
-            <div className="mt-4">
-              <label className="mb-1 block text-xs font-medium text-gray-400">Labels</label>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {task.labels.map((l) => (
-                  <span
-                    key={l.name}
-                    className="flex items-center gap-1 rounded-full py-1 pl-2.5 pr-1 text-xs font-medium text-white"
-                    style={{ backgroundColor: l.color }}
-                  >
-                    {l.name}
-                    {canEdit && (
-                      <button
-                        onClick={() => handleRemoveLabel(l.name)}
-                        className="rounded-full px-1 hover:bg-black/20"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </span>
-                ))}
-                {canEdit && (
-                  <button
-                    onClick={() => setShowLabelPicker((s) => !s)}
-                    className="rounded-full border border-dashed border-space-600 px-2 py-1 text-xs text-gray-500 hover:border-orbit-400 hover:text-orbit-600"
-                  >
-                    + Add
-                  </button>
-                )}
-              </div>
-              {showLabelPicker && (
-                <div className="mt-2 flex items-center gap-2 rounded-lg border border-space-700 p-2">
-                  <input
-                    className="input-field flex-1 text-sm"
-                    placeholder="Label name"
-                    value={newLabelName}
-                    onChange={(e) => setNewLabelName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
-                  />
-                  <div className="flex gap-1">
-                    {LABEL_COLORS.map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => setNewLabelColor(c)}
-                        className={`h-5 w-5 rounded-full ${newLabelColor === c ? 'ring-2 ring-offset-1 ring-offset-space-900 ring-space-50' : ''}`}
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                  <button onClick={handleAddLabel} className="btn-primary py-1 text-xs">
-                    Add
-                  </button>
-                </div>
-              )}
-            </div>
 
             <div className="mt-4">
               <label className="mb-1 block text-xs font-medium text-gray-400">Description</label>
@@ -738,6 +552,208 @@ export function TaskDetailModal({
                 )}
               </div>
             )}
+            </div>
+            <aside className="mt-6 lg:sticky lg:top-4 lg:mt-0 lg:self-start">
+              <div className="rounded-lg border border-space-700 bg-space-950 p-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-space-400">Details</h3>
+            {/* Meta grid: type, priority, story points, due date */}
+            <div className="mt-4 grid grid-cols-1 gap-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Type</label>
+                <select
+                  disabled={!canEdit}
+                  className="input-field text-sm"
+                  value={task.type}
+                  onChange={(e) => handleTypeChange(e.target.value as TaskType)}
+                >
+                  {TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.icon} {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Story points</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  disabled={!canEdit}
+                  className="input-field text-sm"
+                  placeholder="—"
+                  defaultValue={task.storyPoints ?? ''}
+                  onBlur={(e) => handleStoryPointsChange(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Due date</label>
+                <input
+                  type="date"
+                  disabled={!canEdit}
+                  className={`input-field text-sm ${isOverdue ? 'text-red-700' : ''}`}
+                  defaultValue={task.dueDate ? task.dueDate.slice(0, 10) : ''}
+                  onChange={(e) => handleDueDateChange(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Epic</label>
+                <select
+                  disabled={!canEdit}
+                  className="input-field text-sm"
+                  value={task.epicId || ''}
+                  onChange={(e) => handleEpicChange(e.target.value)}
+                >
+                  <option value="">No epic</option>
+                  {epics?.map((e) => (
+                    <option key={e._id} value={e._id}>
+                      {e.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {sprints && sprints.length > 0 && (
+              <div className="mt-3">
+                <label className="mb-1 block text-xs font-medium text-gray-400">Sprint</label>
+                <select
+                  disabled={!canEdit}
+                  className="input-field text-sm"
+                  value={task.sprintId || ''}
+                  onChange={(e) => handleSprintChange(e.target.value)}
+                >
+                  <option value="">Backlog (no sprint)</option>
+                  {sprints.map((s) => (
+                    <option key={s._id} value={s._id}>
+                      {s.name} {s.status === 'active' ? '(active)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="mt-4">
+              <label className="mb-1 block text-xs font-medium text-gray-400">Priority</label>
+              <div className="flex gap-1.5">
+                {PRIORITIES.map((p) => (
+                  <button
+                    key={p}
+                    disabled={!canEdit}
+                    onClick={() => handlePriorityChange(p)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium capitalize transition ${
+                      task.priority === p
+                        ? 'bg-orbit-500 text-white'
+                        : 'bg-space-800 text-gray-400 hover:bg-space-700'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Assignees */}
+            <div className="mt-4">
+              <label className="mb-1 block text-xs font-medium text-gray-400">Assignees</label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {assignedMembers.map((m) => (
+                  <span
+                    key={m.userId._id}
+                    className="flex items-center gap-1 rounded-full bg-orbit-500/10 py-1 pl-1 pr-2 text-xs font-medium text-orbit-300"
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-orbit-500 text-[10px] font-semibold text-white">
+                      {m.userId.name?.[0]?.toUpperCase()}
+                    </span>
+                    {m.userId.name}
+                  </span>
+                ))}
+                {canEdit && (
+                  <button
+                    onClick={() => setShowAssigneePicker((s) => !s)}
+                    className="rounded-full border border-dashed border-space-600 px-2 py-1 text-xs text-gray-500 hover:border-orbit-400 hover:text-orbit-600"
+                  >
+                    + Add
+                  </button>
+                )}
+              </div>
+              {showAssigneePicker && (
+                <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-space-700 p-1.5">
+                  {members?.map((m) => (
+                    <label
+                      key={m.userId._id}
+                      className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-space-800"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={task.assigneeIds.includes(m.userId._id)}
+                        onChange={() => toggleAssignee(m.userId._id)}
+                      />
+                      {m.userId.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Labels */}
+            <div className="mt-4">
+              <label className="mb-1 block text-xs font-medium text-gray-400">Labels</label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {task.labels.map((l) => (
+                  <span
+                    key={l.name}
+                    className="flex items-center gap-1 rounded-full py-1 pl-2.5 pr-1 text-xs font-medium text-white"
+                    style={{ backgroundColor: l.color }}
+                  >
+                    {l.name}
+                    {canEdit && (
+                      <button
+                        onClick={() => handleRemoveLabel(l.name)}
+                        className="rounded-full px-1 hover:bg-black/20"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </span>
+                ))}
+                {canEdit && (
+                  <button
+                    onClick={() => setShowLabelPicker((s) => !s)}
+                    className="rounded-full border border-dashed border-space-600 px-2 py-1 text-xs text-gray-500 hover:border-orbit-400 hover:text-orbit-600"
+                  >
+                    + Add
+                  </button>
+                )}
+              </div>
+              {showLabelPicker && (
+                <div className="mt-2 flex items-center gap-2 rounded-lg border border-space-700 p-2">
+                  <input
+                    className="input-field flex-1 text-sm"
+                    placeholder="Label name"
+                    value={newLabelName}
+                    onChange={(e) => setNewLabelName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
+                  />
+                  <div className="flex gap-1">
+                    {LABEL_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setNewLabelColor(c)}
+                        className={`h-5 w-5 rounded-full ${newLabelColor === c ? 'ring-2 ring-offset-1 ring-offset-space-900 ring-space-50' : ''}`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                  <button onClick={handleAddLabel} className="btn-primary py-1 text-xs">
+                    Add
+                  </button>
+                </div>
+              )}
+            </div>
+
+              </div>
+            </aside>
           </div>
         </motion.div>
       </motion.div>
