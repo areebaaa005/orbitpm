@@ -591,3 +591,27 @@ export function useAssignTaskToSprint(projectId: string | undefined) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks', projectId] }),
   });
 }
+
+// ---------- Sprint insights (burndown / velocity / status) ----------
+
+export interface ProjectInsights {
+  burndown: {
+    sprint: { id: string; name: string; status: 'planned' | 'active' | 'completed'; startDate: string; endDate: string };
+    unit: 'points' | 'tasks';
+    total: number;
+    days: { date: string; ideal: number; actual: number | null }[];
+  } | null;
+  velocity: { name: string; unit: string; committed: number; completed: number }[];
+  statusBreakdown: { name: string; count: number }[];
+}
+
+export function useProjectInsights(projectId: string | undefined) {
+  return useQuery({
+    queryKey: ['analytics-insights', projectId],
+    queryFn: async () => {
+      const res = await api.get(`/projects/${projectId}/analytics/insights`);
+      return res.data.data as ProjectInsights;
+    },
+    enabled: !!projectId,
+  });
+}
