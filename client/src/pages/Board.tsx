@@ -546,7 +546,7 @@ function BoardColumn({
     <div
       ref={setNodeRef}
       className={`flex w-72 flex-shrink-0 flex-col rounded-xl2 p-2.5 transition ${
-        isOver ? 'bg-orbit-50' : 'bg-[#EBECF0]'
+        isOver ? 'bg-orbit-50' : 'bg-column'
       }`}
     >
       <div className="mb-3 flex items-center justify-between px-1">
