@@ -1,42 +1,31 @@
 /** @type {import('tailwindcss').Config} */
+const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        space: {
-          50: '#172B4D',
-          100: '#253858',
-          200: '#42526E',
-          300: '#505F79',
-          400: '#6B778C',
-          500: '#8993A4',
-          600: '#C1C7D0',
-          700: '#DFE1E6',
-          800: '#F1F2F4',
-          900: '#FFFFFF',
-          950: '#F4F5F7',
-        },
+        space: Object.fromEntries(
+          [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((n) => [n, v(`space-${n}`)])
+        ),
+        // Tailwind's default grays used by older code, mapped onto the same theme tokens
         gray: {
-          50: '#F4F5F7',
-          100: '#172B4D',
-          200: '#253858',
-          300: '#42526E',
-          400: '#6B778C',
-          500: '#8993A4',
-          600: '#6B778C',
-          700: '#DFE1E6',
-          800: '#F1F2F4',
-          900: '#FFFFFF',
+          50: v('space-950'),
+          100: v('space-50'),
+          200: v('space-100'),
+          300: v('space-200'),
+          400: v('space-400'),
+          500: v('space-500'),
+          600: v('space-400'),
+          700: v('space-700'),
+          800: v('space-800'),
+          900: v('space-900'),
         },
-        orbit: {
-          50: '#E9F2FF',
-          100: '#CCE0FF',
-          300: '#0055CC',
-          500: '#0C66E4',
-          600: '#0055CC',
-          700: '#09326C',
-        },
+        orbit: Object.fromEntries([50, 100, 300, 500, 600, 700].map((n) => [n, v(`orbit-${n}`)])),
+        column: v('column'),
+        sidebar: v('sidebar'),
         amber: {
           400: '#FBBF24',
           500: '#F59E0B',

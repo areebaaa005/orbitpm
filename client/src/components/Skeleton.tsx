@@ -38,7 +38,7 @@ export function BoardSkeleton() {
   return (
     <div className="flex gap-4">
       {[3, 2, 2, 1].map((cards, i) => (
-        <div key={i} className="w-72 flex-shrink-0 rounded-xl2 bg-[#EBECF0] p-2.5">
+        <div key={i} className="w-72 flex-shrink-0 rounded-xl2 bg-column p-2.5">
           <Skeleton className="mb-3 h-4 w-24 bg-space-600/50" />
           <div className="space-y-2">
             {Array.from({ length: cards }).map((_, j) => (

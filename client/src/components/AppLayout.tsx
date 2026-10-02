@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useProject } from '../hooks/useWorkspaceData';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { ShortcutsHelp } from './ShortcutsHelp';
+import { ThemeToggle } from './ThemeToggle';
 
 import type { LucideIcon } from 'lucide-react';
 import { Keyboard, LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
@@ -187,7 +188,7 @@ export function AppLayout({
   return (
     <div className="flex min-h-screen bg-space-950">
       {/* Desktop sidebar: its own surface + right border so it reads as a panel */}
-      <aside className="sticky top-0 hidden h-screen w-64 flex-shrink-0 flex-col border-r border-white/10 bg-[#091E42] md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 flex-shrink-0 flex-col border-r border-white/10 bg-sidebar md:flex">
         {sidebarContent}
       </aside>
 
@@ -195,7 +196,7 @@ export function AppLayout({
       {mobileNavOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setMobileNavOpen(false)} />
-          <aside className="relative flex w-64 flex-col border-r border-white/10 bg-[#091E42]">
+          <aside className="relative flex w-64 flex-col border-r border-white/10 bg-sidebar">
             {sidebarContent}
           </aside>
         </div>
@@ -231,6 +232,7 @@ export function AppLayout({
             >
               <Keyboard size={18} strokeWidth={1.75} />
             </button>
+            <ThemeToggle />
             <NotificationBell />
           </div>
         </header>
