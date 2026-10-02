@@ -8,6 +8,8 @@ export interface IEpic extends Document {
   description?: string;
   color: string;
   status: 'open' | 'closed';
+  startDate?: Date | null;
+  endDate?: Date | null;
   createdBy: Types.ObjectId;
   createdAt: Date;
 }
@@ -24,6 +26,8 @@ const epicSchema = new Schema<IEpic>({
     default: () => EPIC_COLORS[Math.floor(Math.random() * EPIC_COLORS.length)],
   },
   status: { type: String, enum: ['open', 'closed'], default: 'open' },
+  startDate: { type: Date },
+  endDate: { type: Date },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now },
 });
