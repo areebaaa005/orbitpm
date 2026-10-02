@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../app';
 import { signAccessToken } from '../utils/jwt';
+import { User } from '../modules/users/user.model';
 
 const app = createApp();
 
@@ -148,5 +149,33 @@ describe('Robustness: malformed ids', () => {
     const res = await request(app).get(url).set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('INVALID_ID');
+  });
+});
+
+describe('Hardening: search input', () => {
+  it('treats regex characters literally and rejects non-string queries without erroring', async () => {
+    const { token } = await registerAndLogin('search-hardening');
+    const ws = await request(app).post('/api/v1/workspaces').set('Authorization', `Bearer ${token}`).send({ name: 'Search WS' });
+    const id = ws.body.data.workspace._id;
+    for (const q of ['((', '(a+)+$', '[abc', '.*']) {
+      const res = await request(app)
+        .get(`/api/v1/workspaces/${id}/search`)
+        .query({ q })
+        .set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+    }
+    const arr = await request(app).get(`/api/v1/workspaces/${id}/search?q=ab&q=cd`).set('Authorization', `Bearer ${token}`);
+    expect(arr.status).toBe(200);
+  });
+});
+
+describe('Hardening: sessions', () => {
+  it('stops a suspended user from refreshing their session', async () => {
+    const email = `suspended-${runId}@orbitpm.dev`;
+    const reg = await request(app).post('/api/v1/auth/register').send({ name: 'To Suspend', email, password: 'ValidPass123' });
+    const cookies = reg.headers['set-cookie'];
+    await User.updateOne({ email }, { status: 'suspended' });
+    const res = await request(app).post('/api/v1/auth/refresh').set('Cookie', cookies);
+    expect(res.status).toBe(403);
   });
 });

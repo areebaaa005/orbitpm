@@ -1,8 +1,11 @@
 import { Task } from '../tasks/task.model';
 import { Project } from '../projects/project.model';
+import { escapeRegex } from '../../utils/escapeRegex';
 
-export async function searchWorkspace(workspaceId: string, query: string) {
-  if (!query || query.trim().length < 2) {
+export async function searchWorkspace(workspaceId: string, rawQuery: unknown) {
+  // ?q=a&q=b arrives as an array; anything that is not a plain string is treated as empty
+  const query = typeof rawQuery === 'string' ? rawQuery.trim().slice(0, 100) : '';
+  if (query.length < 2) {
     return { tasks: [], projects: [] };
   }
 
@@ -14,7 +17,7 @@ export async function searchWorkspace(workspaceId: string, query: string) {
     Project.find({
       workspaceId,
       status: 'active',
-      name: { $regex: query, $options: 'i' },
+      name: { $regex: escapeRegex(query), $options: 'i' },
     })
       .select('name key color')
       .limit(10),
