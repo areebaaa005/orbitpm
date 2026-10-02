@@ -92,6 +92,9 @@ export interface Epic {
   description?: string;
   color: string;
   status: 'open' | 'closed';
+  startDate?: string | null;
+  endDate?: string | null;
+  createdAt?: string;
 }
 
 export interface Sprint {

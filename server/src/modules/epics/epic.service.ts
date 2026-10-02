@@ -5,7 +5,7 @@ export async function createEpic(
   projectId: string,
   workspaceId: string,
   userId: string,
-  data: { name: string; description?: string; color?: string }
+  data: { name: string; description?: string; color?: string; startDate?: Date | null; endDate?: Date | null }
 ) {
   return Epic.create({ projectId, workspaceId, createdBy: userId, ...data });
 }
@@ -16,7 +16,14 @@ export async function listEpics(projectId: string) {
 
 export async function updateEpic(
   epicId: string,
-  updates: { name?: string; description?: string; color?: string; status?: 'open' | 'closed' }
+  updates: {
+    name?: string;
+    description?: string;
+    color?: string;
+    status?: 'open' | 'closed';
+    startDate?: Date | null;
+    endDate?: Date | null;
+  }
 ) {
   const epic = await Epic.findByIdAndUpdate(epicId, updates, { new: true });
   if (!epic) throw ApiError.notFound('Epic not found');

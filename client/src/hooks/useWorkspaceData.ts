@@ -495,6 +495,7 @@ export function useCreateEpic(projectId: string | undefined) {
 export function useUpdateEpic(projectId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
+    meta: { successMessage: 'Epic updated' },
     mutationFn: async ({ epicId, ...updates }: { epicId: string } & Partial<Epic>) => {
       const res = await api.patch(`/projects/${projectId}/epics/${epicId}`, updates);
       return res.data.data.epic as Epic;

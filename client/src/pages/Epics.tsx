@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Zap } from 'lucide-react';
+import { Zap, List, CalendarRange } from 'lucide-react';
+import { EpicRoadmap } from '../components/EpicRoadmap';
 import { EmptyState } from '../components/EmptyState';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +10,8 @@ import {
   useCreateEpic,
   useDeleteEpic,
   useTasks,
+  useColumns,
+  useUpdateEpic,
   useMyRole,
 } from '../hooks/useWorkspaceData';
 import { AppLayout } from '../components/AppLayout';
@@ -23,6 +26,10 @@ export default function Epics() {
   const { data: tasks } = useTasks(projectId);
   const createEpic = useCreateEpic(projectId);
   const deleteEpic = useDeleteEpic(projectId);
+  const updateEpic = useUpdateEpic(projectId);
+  const { data: columns } = useColumns(projectId);
+  const [view, setView] = useState<'list' | 'roadmap'>('list');
+  const doneColumnIds = (columns || []).filter((c) => /^done$/i.test(c.name)).map((c) => c._id);
 
   const [name, setName] = useState('');
   const [color, setColor] = useState(EPIC_COLORS[0]);
@@ -36,7 +43,7 @@ export default function Epics() {
 
   return (
     <AppLayout workspaceId={project?.workspaceId} projectId={projectId}>
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-8">
+      <div className={`mx-auto px-4 py-10 sm:px-8 ${view === 'roadmap' ? 'max-w-6xl' : 'max-w-3xl'}`}>
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Link to={`/projects/${projectId}`} className="hover:text-gray-400">
             {project?.name}
@@ -48,6 +55,18 @@ export default function Epics() {
         <p className="mt-1 text-sm text-gray-400">
           Group related tasks under a larger initiative or feature.
         </p>
+
+        <div className="mt-4 inline-flex rounded-md border border-space-700 bg-space-900 p-0.5 text-xs font-medium">
+          {([['list', 'List', List], ['roadmap', 'Roadmap', CalendarRange]] as const).map(([key, label, Icon]) => (
+            <button
+              key={key}
+              onClick={() => setView(key)}
+              className={`flex items-center gap-1.5 rounded px-3 py-1.5 ${view === key ? 'bg-orbit-500 text-white' : 'text-space-200 hover:bg-space-800'}`}
+            >
+              <Icon size={14} /> {label}
+            </button>
+          ))}
+        </div>
 
         {canManage && (
           <div className="mt-6 card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-2">
@@ -74,6 +93,15 @@ export default function Epics() {
           </div>
         )}
 
+        {view === 'roadmap' && epics && epics.length > 0 ? (
+          <EpicRoadmap
+            epics={epics}
+            tasks={tasks || []}
+            doneColumnIds={doneColumnIds}
+            canManage={canManage}
+            onUpdate={(epicId, dates) => updateEpic.mutate({ epicId, ...dates })}
+          />
+        ) : (
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <AnimatePresence>
             {epics?.map((epic) => {
@@ -114,6 +142,7 @@ export default function Epics() {
             />
           )}
         </div>
+        )}
       </div>
     </AppLayout>
   );
