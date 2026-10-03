@@ -39,7 +39,7 @@ const TONE: Record<string, string> = {
 const tone = (action: string) => TONE[action.split('.')[1]] || 'bg-space-800 text-space-200';
 
 function details(e: AuditEntry): string {
-  const m = e.metadata as Record<string, any>;
+  const m = (e.metadata ?? {}) as Record<string, any>;
   if (m.from !== undefined && m.to !== undefined) return `${m.from ?? '—'} → ${m.to}`;
   if (e.action === 'member.invited' && m.role) return `as ${m.role}`;
   if (e.action === 'project.updated' && Array.isArray(m.fields)) return `changed ${m.fields.join(', ')}`;

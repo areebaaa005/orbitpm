@@ -165,6 +165,8 @@ describe('Audit log', () => {
     const actions = list.body.data.logs.map((l: { action: string }) => l.action);
     expect(actions).toContain('workspace.created');
     expect(actions).toContain('workspace.renamed');
+    // Entries without extra details (e.g. workspace.created) must still carry a metadata object
+    expect(list.body.data.logs.every((l: { metadata: unknown }) => typeof l.metadata === 'object' && l.metadata !== null)).toBe(true);
 
     const denied = await request(app).get(`/api/v1/workspaces/${id}/audit-logs`).set('Authorization', `Bearer ${outsider.token}`);
     expect([403, 404]).toContain(denied.status);

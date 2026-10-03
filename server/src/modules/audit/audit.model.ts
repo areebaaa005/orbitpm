@@ -31,18 +31,31 @@ export interface IAuditLog extends Document {
   createdAt: Date;
 }
 
-const auditLogSchema = new Schema<IAuditLog>({
-  workspaceId: { type: Schema.Types.ObjectId, required: true },
-  actorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  action: { type: String, enum: AUDIT_ACTIONS, required: true },
-  targetType: { type: String, required: true },
-  targetId: { type: String },
-  targetLabel: { type: String, maxlength: 200 },
-  metadata: { type: Schema.Types.Mixed, default: {} },
-  ip: { type: String },
-  userAgent: { type: String, maxlength: 300 },
-  createdAt: { type: Date, default: Date.now },
-});
+const auditLogSchema = new Schema<IAuditLog>(
+  {
+    workspaceId: { type: Schema.Types.ObjectId, required: true },
+    actorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    action: { type: String, enum: AUDIT_ACTIONS, required: true },
+    targetType: { type: String, required: true },
+    targetId: { type: String },
+    targetLabel: { type: String, maxlength: 200 },
+    metadata: { type: Schema.Types.Mixed, default: {} },
+    ip: { type: String },
+    userAgent: { type: String, maxlength: 300 },
+    createdAt: { type: Date, default: Date.now },
+  },
+  {
+    // Mongoose drops empty objects by default, which would make `metadata` disappear for events with no extra details.
+    minimize: false,
+    toJSON: {
+      // Entries saved before minimize was turned off have no metadata field: always send one to clients.
+      transform: (_doc, ret: Record<string, unknown>) => {
+        ret.metadata = ret.metadata ?? {};
+        return ret;
+      },
+    },
+  }
+);
 
 // Newest-first listing per workspace, optionally filtered by action/actor
 auditLogSchema.index({ workspaceId: 1, createdAt: -1 });
