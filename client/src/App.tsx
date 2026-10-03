@@ -10,6 +10,7 @@ import Members from './pages/Members';
 import AcceptInvite from './pages/AcceptInvite';
 import Backlog from './pages/Backlog';
 import Epics from './pages/Epics';
+import AuditLog from './pages/AuditLog';
 
 export default function App() {
   return (
@@ -63,6 +64,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Epics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workspaces/:workspaceId/audit"
+          element={
+            <ProtectedRoute>
+              <AuditLog />
             </ProtectedRoute>
           }
         />
