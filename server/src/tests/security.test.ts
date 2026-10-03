@@ -152,6 +152,33 @@ describe('Robustness: malformed ids', () => {
   });
 });
 
+describe('Audit log', () => {
+  it('records admin actions, shows them to admins only, and exports CSV', async () => {
+    const owner = await registerAndLogin('audit-owner');
+    const outsider = await registerAndLogin('audit-outsider');
+
+    const ws = await request(app).post('/api/v1/workspaces').set('Authorization', `Bearer ${owner.token}`).send({ name: 'Audit WS' });
+    const id = ws.body.data.workspace._id;
+    await request(app).patch(`/api/v1/workspaces/${id}`).set('Authorization', `Bearer ${owner.token}`).send({ name: 'Audit WS renamed' });
+
+    const list = await request(app).get(`/api/v1/workspaces/${id}/audit-logs`).set('Authorization', `Bearer ${owner.token}`);
+    expect(list.status).toBe(200);
+    const actions = list.body.data.logs.map((l: { action: string }) => l.action);
+    expect(actions).toContain('workspace.created');
+    expect(actions).toContain('workspace.renamed');
+    // Entries without extra details (e.g. workspace.created) must still carry a metadata object
+    expect(list.body.data.logs.every((l: { metadata: unknown }) => typeof l.metadata === 'object' && l.metadata !== null)).toBe(true);
+
+    const denied = await request(app).get(`/api/v1/workspaces/${id}/audit-logs`).set('Authorization', `Bearer ${outsider.token}`);
+    expect([403, 404]).toContain(denied.status);
+
+    const csv = await request(app).get(`/api/v1/workspaces/${id}/audit-logs/export`).set('Authorization', `Bearer ${owner.token}`);
+    expect(csv.status).toBe(200);
+    expect(csv.headers['content-type']).toMatch(/text\/csv/);
+    expect(csv.text).toContain('workspace.renamed');
+  });
+});
+
 describe('Hardening: search input', () => {
   it('treats regex characters literally and rejects non-string queries without erroring', async () => {
     const { token } = await registerAndLogin('search-hardening');

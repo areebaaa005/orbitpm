@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -10,10 +11,12 @@ import Members from './pages/Members';
 import AcceptInvite from './pages/AcceptInvite';
 import Backlog from './pages/Backlog';
 import Epics from './pages/Epics';
+import AuditLog from './pages/AuditLog';
 
 export default function App() {
   return (
-    <AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -66,8 +69,17 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/workspaces/:workspaceId/audit"
+          element={
+            <ProtectedRoute>
+              <AuditLog />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }

@@ -5,13 +5,13 @@ import { NotificationBell } from './NotificationBell';
 import { EditProfileModal } from './EditProfileModal';
 import { CommandPalette } from './CommandPalette';
 import { useAuth } from '../context/AuthContext';
-import { useProject } from '../hooks/useWorkspaceData';
+import { useProject, useMyRole } from '../hooks/useWorkspaceData';
 import { useHotkeys } from '../hooks/useHotkeys';
 import { ShortcutsHelp } from './ShortcutsHelp';
 import { ThemeToggle } from './ThemeToggle';
 
 import type { LucideIcon } from 'lucide-react';
-import { Keyboard, LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
+import { ScrollText, Keyboard, LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -39,6 +39,7 @@ export function AppLayout({
   const navigate = useNavigate();
   const location = useLocation();
   const { data: project } = useProject(projectId);
+  const { data: myRole } = useMyRole(workspaceId ?? project?.workspaceId);
   const [helpOpen, setHelpOpen] = useState(false);
   useHotkeys({
     '?': (e) => {
@@ -64,7 +65,12 @@ export function AppLayout({
     : [];
 
   const workspaceNavItems: NavItem[] = workspaceId
-    ? [{ label: 'Members', icon: Users, path: `/workspaces/${workspaceId}/members` }]
+    ? [
+        { label: 'Members', icon: Users, path: `/workspaces/${workspaceId}/members` },
+        ...(myRole === 'owner' || myRole === 'admin'
+          ? [{ label: 'Audit log', icon: ScrollText, path: `/workspaces/${workspaceId}/audit` }]
+          : []),
+      ]
     : [];
 
   function isActive(path: string) {

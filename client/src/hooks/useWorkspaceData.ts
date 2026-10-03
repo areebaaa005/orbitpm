@@ -616,3 +616,55 @@ export function useProjectInsights(projectId: string | undefined) {
     enabled: !!projectId,
   });
 }
+
+// ---------- Audit log (workspace admins) ----------
+
+export interface AuditEntry {
+  _id: string;
+  action: string;
+  targetType: string;
+  targetId?: string;
+  targetLabel?: string;
+  metadata: Record<string, unknown>;
+  ip?: string;
+  createdAt: string;
+  actorId: { _id: string; name: string; email: string } | null;
+}
+
+export interface AuditFilters {
+  action: string;
+  actorId: string;
+  from: string;
+  to: string;
+}
+
+const auditParams = (f: AuditFilters) =>
+  Object.fromEntries(Object.entries(f).filter(([, v]) => v));
+
+export function useAuditLogs(workspaceId: string | undefined, filters: AuditFilters, page: number) {
+  return useQuery({
+    queryKey: ['audit-logs', workspaceId, filters, page],
+    queryFn: async () => {
+      const res = await api.get(`/workspaces/${workspaceId}/audit-logs`, {
+        params: { ...auditParams(filters), page, limit: 25 },
+      });
+      return res.data.data as { logs: AuditEntry[]; total: number; page: number; limit: number };
+    },
+    enabled: !!workspaceId,
+    placeholderData: (prev) => prev,
+  });
+}
+
+/** Downloads the filtered audit log as CSV (the request needs the auth header, so a plain link will not work). */
+export async function downloadAuditCsv(workspaceId: string, filters: AuditFilters) {
+  const res = await api.get(`/workspaces/${workspaceId}/audit-logs/export`, {
+    params: auditParams(filters),
+    responseType: 'blob',
+  });
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'audit-log.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}

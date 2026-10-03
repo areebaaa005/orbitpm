@@ -17,11 +17,16 @@ import { projectAiRouter } from './modules/ai/ai.routes';
 import { projectEpicRouter } from './modules/epics/epic.routes';
 import { projectSprintRouter, taskSprintRouter } from './modules/sprints/sprint.routes';
 import searchRoutes from './modules/search/search.routes';
+import auditRoutes from './modules/audit/audit.routes';
 
 export function createApp(): Application {
   const app = express();
 
   app.use(helmet());
+  // Behind a reverse proxy (Render), req.ip would be the proxy's address for every client: that breaks
+  // per-client rate limiting and records the wrong IP in the audit log. Trust exactly one hop.
+  if (env.nodeEnv === 'production') app.set('trust proxy', 1);
+
   app.use(
     cors({
       origin: env.clientUrl,
@@ -54,6 +59,7 @@ export function createApp(): Application {
   app.use('/api/v1/projects/:projectId/sprints', projectSprintRouter);
   app.use('/api/v1/tasks/:taskId/sprint', taskSprintRouter);
   app.use('/api/v1/workspaces/:workspaceId/search', searchRoutes);
+  app.use('/api/v1/workspaces/:workspaceId/audit-logs', auditRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
