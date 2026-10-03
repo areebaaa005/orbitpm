@@ -8,6 +8,9 @@ import { env } from '../../config/env';
 import { RegisterInput, LoginInput } from './auth.validation';
 
 const SALT_ROUNDS = 12;
+// A refresh token used twice within this window is treated as a duplicate request (two tabs, a retry),
+// not as theft.
+const REUSE_GRACE_MS = 10_000;
 
 function sanitizeUser(user: IUser) {
   return {
@@ -83,17 +86,35 @@ export async function refreshSession(refreshToken: string) {
     userId: payload.userId,
   });
 
-  if (!session || session.revokedAt || session.expiresAt < new Date()) {
+  if (!session) {
+    throw ApiError.unauthorized('Session is no longer valid');
+  }
+
+  // An already-rotated token coming back after the grace window means someone kept a copy of it:
+  // revoke every session of this user so the thief and the real user both have to sign in again.
+  if (session.rotatedAt && Date.now() - session.rotatedAt.getTime() > REUSE_GRACE_MS) {
+    await RefreshSession.updateMany({ userId: payload.userId, revokedAt: null }, { revokedAt: new Date() });
+    throw ApiError.unauthorized('Session is no longer valid');
+  }
+
+  if (session.revokedAt || session.expiresAt < new Date()) {
     throw ApiError.unauthorized('Session is no longer valid');
   }
 
   // Rotate: revoke old session, issue a new one (prevents replay of stolen tokens)
   session.revokedAt = new Date();
+  session.rotatedAt = session.revokedAt;
   await session.save();
 
   const user = await User.findById(payload.userId);
   if (!user) {
     throw ApiError.unauthorized('User no longer exists');
+  }
+
+  // A suspended account must not be able to keep renewing its session.
+  if (user.status === 'suspended') {
+    await RefreshSession.updateMany({ userId: user._id, revokedAt: null }, { revokedAt: new Date() });
+    throw ApiError.forbidden('This account has been suspended');
   }
 
   const tokens = await createSession(user._id.toString());

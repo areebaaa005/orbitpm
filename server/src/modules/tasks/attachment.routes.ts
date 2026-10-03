@@ -6,6 +6,7 @@ import { requireWorkspaceMember, requireMinRole } from '../../middleware/rbac';
 import { loadTaskWorkspace } from '../../middleware/loadTaskWorkspace';
 import { ApiError } from '../../utils/ApiError';
 import { uploadBuffer, deleteByPublicId } from '../../utils/cloudinary';
+import { isFileContentValid, sanitizeFilename } from '../../utils/fileSignature';
 import { Task } from './task.model';
 import { logActivity } from '../activities/activity.service';
 
@@ -59,7 +60,12 @@ router.post(
   catchAsync(async (req: Request, res: Response) => {
     if (!req.file) throw ApiError.badRequest('NO_FILE', 'No file was provided');
 
-    const { url, publicId } = await uploadBuffer(req.file.buffer, req.file.originalname);
+    if (!isFileContentValid(req.file.mimetype, req.file.buffer)) {
+      throw ApiError.badRequest('FILE_CONTENT_MISMATCH', 'The file content does not match its file type');
+    }
+    const filename = sanitizeFilename(req.file.originalname);
+
+    const { url, publicId } = await uploadBuffer(req.file.buffer, filename);
 
     const task = await Task.findByIdAndUpdate(
       req.params.taskId,
@@ -68,7 +74,7 @@ router.post(
           attachments: {
             url,
             publicId,
-            filename: req.file.originalname,
+            filename,
             size: req.file.size,
             mimeType: req.file.mimetype,
             uploadedBy: req.userId,

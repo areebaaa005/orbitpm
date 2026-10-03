@@ -7,6 +7,7 @@ export interface IRefreshSession extends Document {
   userAgent?: string;
   expiresAt: Date;
   revokedAt?: Date | null;
+  rotatedAt?: Date | null;
   createdAt: Date;
 }
 
@@ -16,6 +17,7 @@ const refreshSessionSchema = new Schema<IRefreshSession>({
   userAgent: { type: String },
   expiresAt: { type: Date, required: true },
   revokedAt: { type: Date, default: null },
+  rotatedAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 
