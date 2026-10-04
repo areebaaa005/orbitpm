@@ -3,6 +3,7 @@ import request from 'supertest';
 import { createApp } from '../app';
 import { signAccessToken } from '../utils/jwt';
 import { User } from '../modules/users/user.model';
+import { hotp, base32Decode } from '../utils/totp';
 
 const app = createApp();
 
@@ -204,5 +205,52 @@ describe('Hardening: sessions', () => {
     await User.updateOne({ email }, { status: 'suspended' });
     const res = await request(app).post('/api/v1/auth/refresh').set('Cookie', cookies);
     expect(res.status).toBe(403);
+  });
+});
+
+describe('Two-factor authentication', () => {
+  it('asks for a code after the password, rejects replays and wrong codes, and issues a session on success', async () => {
+    const email = `2fa-${runId}@orbitpm.dev`;
+    const password = 'ValidPass123';
+    const reg = await request(app).post('/api/v1/auth/register').send({ name: 'Two Factor', email, password });
+    const auth = { Authorization: `Bearer ${reg.body.data.accessToken}` };
+
+    const setup = await request(app).post('/api/v1/auth/2fa/setup').set(auth);
+    expect(setup.status).toBe(200);
+    const secret: string = setup.body.data.secret;
+    const stepNow = Math.floor(Date.now() / 30000);
+    const codeFor = (step: number) => hotp(base32Decode(secret), step);
+
+    const bad = await request(app).post('/api/v1/auth/2fa/enable').set(auth).send({ code: '000000' });
+    expect(bad.status).toBe(400);
+    const enable = await request(app).post('/api/v1/auth/2fa/enable').set(auth).send({ code: codeFor(stepNow) });
+    expect(enable.status).toBe(200);
+    expect(enable.body.data.recoveryCodes).toHaveLength(10);
+
+    const login = await request(app).post('/api/v1/auth/login').send({ email, password });
+    expect(login.status).toBe(200);
+    expect(login.body.data.twoFactorRequired).toBe(true);
+    expect(login.body.data.accessToken).toBeUndefined();
+    expect(login.headers['set-cookie']).toBeUndefined();
+    const challengeToken = login.body.data.challengeToken;
+
+    // The step used to enable 2FA cannot be reused, and a wrong code is refused
+    const replay = await request(app).post('/api/v1/auth/2fa/verify').send({ challengeToken, code: codeFor(stepNow) });
+    expect(replay.status).toBe(401);
+    const wrong = await request(app).post('/api/v1/auth/2fa/verify').send({ challengeToken, code: '000000' });
+    expect(wrong.status).toBe(401);
+
+    const ok = await request(app).post('/api/v1/auth/2fa/verify').send({ challengeToken, code: codeFor(stepNow + 1) });
+    expect(ok.status).toBe(200);
+    expect(ok.body.data.accessToken).toBeTruthy();
+    expect(ok.body.data.user.twoFactorEnabled).toBe(true);
+
+    // A recovery code works once
+    const second = await request(app).post('/api/v1/auth/login').send({ email, password });
+    const rc = enable.body.data.recoveryCodes[0];
+    const viaRecovery = await request(app).post('/api/v1/auth/2fa/verify').send({ challengeToken: second.body.data.challengeToken, code: rc });
+    expect(viaRecovery.status).toBe(200);
+    const reuse = await request(app).post('/api/v1/auth/2fa/verify').send({ challengeToken: second.body.data.challengeToken, code: rc });
+    expect(reuse.status).toBe(401);
   });
 });

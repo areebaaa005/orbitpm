@@ -6,7 +6,11 @@ import { User } from '../types';
 interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** Resolves with a challengeToken when the account has 2FA: finish with verifyTwoFactor(). */
+  login: (email: string, password: string) => Promise<{ challengeToken?: string }>;
+  verifyTwoFactor: (challengeToken: string, code: string) => Promise<void>;
+  /** Re-reads the signed-in user (e.g. after turning 2FA on or off). */
+  refreshUser: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (updates: { name?: string; email?: string }) => Promise<void>;
@@ -37,9 +41,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string) {
     const res = await api.post('/auth/login', { email, password });
+    if (res.data.data.twoFactorRequired) {
+      return { challengeToken: res.data.data.challengeToken as string };
+    }
     setAccessToken(res.data.data.accessToken);
     setUser(res.data.data.user);
     connectSocket();
+    return {};
+  }
+
+  async function verifyTwoFactor(challengeToken: string, code: string) {
+    const res = await api.post('/auth/2fa/verify', { challengeToken, code });
+    setAccessToken(res.data.data.accessToken);
+    setUser(res.data.data.user);
+    connectSocket();
+  }
+
+  async function refreshUser() {
+    const res = await api.get('/auth/me');
+    setUser(res.data.data.user);
   }
 
   async function register(name: string, email: string, password: string) {
@@ -62,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, isLoading, login, verifyTwoFactor, refreshUser, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

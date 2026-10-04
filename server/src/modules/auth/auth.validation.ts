@@ -22,5 +22,17 @@ export const updateProfileSchema = z.object({
   }),
 });
 
+const codeField = z.string().trim().min(6, 'Enter your code').max(20);
+
+export const twoFactorVerifySchema = z.object({
+  body: z.object({ challengeToken: z.string().min(10), code: codeField }),
+});
+export const twoFactorEnableSchema = z.object({
+  body: z.object({ code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code from your app') }),
+});
+export const twoFactorDisableSchema = z.object({
+  body: z.object({ password: z.string().min(1, 'Password is required'), code: codeField }),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>['body'];
 export type LoginInput = z.infer<typeof loginSchema>['body'];

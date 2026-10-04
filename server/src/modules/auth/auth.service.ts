@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { User, IUser } from '../users/user.model';
 import { RefreshSession } from './refreshSession.model';
 import { ApiError } from '../../utils/ApiError';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/jwt';
+import { signAccessToken, signRefreshToken, verifyRefreshToken, signTwoFactorChallenge } from '../../utils/jwt';
 import { env } from '../../config/env';
 import { RegisterInput, LoginInput } from './auth.validation';
 
@@ -12,16 +12,17 @@ const SALT_ROUNDS = 12;
 // not as theft.
 const REUSE_GRACE_MS = 10_000;
 
-function sanitizeUser(user: IUser) {
+export function sanitizeUser(user: IUser) {
   return {
     id: user._id.toString(),
     name: user.name,
     email: user.email,
     avatar: user.avatar || null,
+    twoFactorEnabled: !!user.twoFactor?.enabled,
   };
 }
 
-async function createSession(userId: string, userAgent?: string) {
+export async function createSession(userId: string, userAgent?: string) {
   const sessionId = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + env.jwtRefreshExpiresInDays * 24 * 60 * 60 * 1000);
 
@@ -66,11 +67,16 @@ export async function loginUser(input: LoginInput, userAgent?: string) {
     throw ApiError.forbidden('This account has been suspended');
   }
 
+  // Password is correct, but a second factor is still required: no session yet, only a short-lived challenge.
+  if (user.twoFactor?.enabled) {
+    return { twoFactorRequired: true as const, challengeToken: signTwoFactorChallenge(user._id.toString()) };
+  }
+
   user.lastSeenAt = new Date();
   await user.save();
 
   const tokens = await createSession(user._id.toString(), userAgent);
-  return { user: sanitizeUser(user), ...tokens };
+  return { twoFactorRequired: false as const, user: sanitizeUser(user), ...tokens };
 }
 
 export async function refreshSession(refreshToken: string) {
