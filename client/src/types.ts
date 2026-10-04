@@ -4,6 +4,8 @@ export interface User {
   email: string;
   avatar: string | null;
   twoFactorEnabled?: boolean;
+  googleLinked?: boolean;
+  hasPassword?: boolean;
 }
 
 export type WorkspaceRole = 'owner' | 'admin' | 'pm' | 'member' | 'viewer';

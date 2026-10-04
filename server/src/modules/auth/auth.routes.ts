@@ -9,6 +9,7 @@ import {
   twoFactorVerifySchema,
   twoFactorEnableSchema,
   twoFactorDisableSchema,
+  googleCredentialSchema,
 } from './auth.validation';
 import * as authController from './auth.controller';
 import { env } from '../../config/env';
@@ -39,6 +40,8 @@ const sessionLimiter = rateLimit({
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 // Second sign-in step and 2FA management. The strict limiter slows guessing; a per-account lockout backs it up.
+router.post('/google', authLimiter, validate(googleCredentialSchema), authController.googleLogin);
+router.post('/google/link', requireAuth, authLimiter, validate(googleCredentialSchema), authController.googleLink);
 router.post('/2fa/verify', authLimiter, validate(twoFactorVerifySchema), authController.twoFactorVerify);
 router.post('/2fa/setup', requireAuth, authController.twoFactorSetup);
 router.post('/2fa/enable', requireAuth, validate(twoFactorEnableSchema), authController.twoFactorEnable);

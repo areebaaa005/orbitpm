@@ -1,13 +1,14 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GoogleSignInButton, OrDivider, googleEnabled } from '../components/GoogleSignInButton';
 import { useAcceptInvitation } from '../hooks/useWorkspaceData';
 import { AuthLayout } from '../components/AuthLayout';
 import { OrbitMark } from '../components/OrbitMark';
 import { PENDING_INVITE_KEY } from './AcceptInvite';
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const acceptInvitation = useAcceptInvitation();
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -15,6 +16,30 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleGoogle(credential: string) {
+    setError(null);
+    try {
+      const result = await loginWithGoogle(credential);
+      // This Google account already belongs to a user who has 2FA on: continue on the sign-in page
+      if (result.challengeToken) {
+        navigate('/login', { state: { challengeToken: result.challengeToken } });
+        return;
+      }
+      const pendingToken = sessionStorage.getItem(PENDING_INVITE_KEY);
+      if (pendingToken) {
+        try {
+          await acceptInvitation.mutateAsync(pendingToken);
+        } catch {
+          // Invitation may have expired or already been used: non-fatal, continue to app.
+        }
+        sessionStorage.removeItem(PENDING_INVITE_KEY);
+      }
+      navigate('/');
+    } catch (err: any) {
+      setError(err?.response?.data?.error?.message || 'Google sign-up failed. Please try again.');
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -95,6 +120,13 @@ export default function Register() {
               {isSubmitting ? 'Creating account…' : 'Create account'}
             </button>
           </form>
+
+          {googleEnabled && (
+            <>
+              <OrDivider />
+              <GoogleSignInButton onCredential={handleGoogle} text="signup_with" />
+            </>
+          )}
         </div>
 
         <p className="mt-6 text-center text-sm text-space-300">

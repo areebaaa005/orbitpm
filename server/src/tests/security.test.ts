@@ -1,4 +1,6 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
+import { OAuth2Client } from 'google-auth-library';
+import { env } from '../config/env';
 import request from 'supertest';
 import { createApp } from '../app';
 import { signAccessToken } from '../utils/jwt';
@@ -252,5 +254,52 @@ describe('Two-factor authentication', () => {
     expect(viaRecovery.status).toBe(200);
     const reuse = await request(app).post('/api/v1/auth/2fa/verify').send({ challengeToken: second.body.data.challengeToken, code: rc });
     expect(reuse.status).toBe(401);
+  });
+});
+
+describe('Google sign-in', () => {
+  const cred = 'x'.repeat(40);
+  const claims = (over: Record<string, unknown> = {}) => ({
+    sub: `g-${runId}`,
+    email: `google-${runId}@orbitpm.dev`,
+    email_verified: true,
+    name: 'Google User',
+    ...over,
+  });
+
+  it('creates an account, refuses to auto-link an existing password account, and links while signed in', async () => {
+    env.googleClientId = 'test-client-id';
+    // Google itself is faked: only our handling of a verified token is under test
+    const verify = vi.spyOn(OAuth2Client.prototype as any, 'verifyIdToken');
+    verify.mockResolvedValue({ getPayload: () => claims() } as never);
+
+    const signup = await request(app).post('/api/v1/auth/google').send({ credential: cred });
+    expect(signup.status).toBe(200);
+    expect(signup.body.data.user.googleLinked).toBe(true);
+    expect(signup.body.data.user.hasPassword).toBe(false);
+
+    const email = `pwuser-${runId}@orbitpm.dev`;
+    const reg = await request(app).post('/api/v1/auth/register').send({ name: 'Password User', email, password: 'ValidPass123' });
+    verify.mockResolvedValue({ getPayload: () => claims({ sub: `g2-${runId}`, email }) } as never);
+
+    const clash = await request(app).post('/api/v1/auth/google').send({ credential: cred });
+    expect(clash.status).toBe(409);
+
+    const link = await request(app)
+      .post('/api/v1/auth/google/link')
+      .set('Authorization', `Bearer ${reg.body.data.accessToken}`)
+      .send({ credential: cred });
+    expect(link.status).toBe(200);
+    expect(link.body.data.user.googleLinked).toBe(true);
+
+    const viaGoogle = await request(app).post('/api/v1/auth/google').send({ credential: cred });
+    expect(viaGoogle.status).toBe(200);
+    expect(viaGoogle.body.data.user.email).toBe(email);
+
+    verify.mockResolvedValue({ getPayload: () => claims({ sub: `g3-${runId}`, email_verified: false }) } as never);
+    const unverified = await request(app).post('/api/v1/auth/google').send({ credential: cred });
+    expect(unverified.status).toBe(401);
+
+    verify.mockRestore();
   });
 });
