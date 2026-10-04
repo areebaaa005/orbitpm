@@ -12,6 +12,7 @@ import AcceptInvite from './pages/AcceptInvite';
 import Backlog from './pages/Backlog';
 import Epics from './pages/Epics';
 import AuditLog from './pages/AuditLog';
+import Security from './pages/Security';
 
 export default function App() {
   return (
@@ -74,6 +75,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AuditLog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/security"
+          element={
+            <ProtectedRoute>
+              <Security />
             </ProtectedRoute>
           }
         />

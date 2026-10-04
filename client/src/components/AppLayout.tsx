@@ -11,7 +11,7 @@ import { ShortcutsHelp } from './ShortcutsHelp';
 import { ThemeToggle } from './ThemeToggle';
 
 import type { LucideIcon } from 'lucide-react';
-import { ScrollText, Keyboard, LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
+import { ShieldCheck, ScrollText, Keyboard, LayoutGrid, Kanban, ListTodo, Zap, ChartColumn, Users, Search, LogOut, Menu, X } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -162,6 +162,13 @@ export function AppLayout({
             <div className="space-y-0.5">{workspaceNavItems.map(navLink)}</div>
           </div>
         )}
+
+        <div>
+          {sectionLabel('Account')}
+          <div className="space-y-0.5">
+            {navLink({ label: 'Security', icon: ShieldCheck, path: '/settings/security' })}
+          </div>
+        </div>
       </nav>
 
       <div className="flex-shrink-0 border-t border-white/10 p-3">

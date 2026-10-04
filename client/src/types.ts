@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   avatar: string | null;
+  twoFactorEnabled?: boolean;
 }
 
 export type WorkspaceRole = 'owner' | 'admin' | 'pm' | 'member' | 'viewer';

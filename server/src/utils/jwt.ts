@@ -22,6 +22,19 @@ export function signRefreshToken(payload: RefreshTokenPayload): string {
   } as jwt.SignOptions);
 }
 
+/** Short-lived token proving the password step passed; only good for submitting a 2FA code. */
+const challengeSecret = () => `${env.jwtAccessSecret}:2fa-challenge`;
+
+export function signTwoFactorChallenge(userId: string): string {
+  return jwt.sign({ userId, purpose: '2fa' }, challengeSecret(), { expiresIn: '5m' });
+}
+
+export function verifyTwoFactorChallenge(token: string): { userId: string } {
+  const payload = jwt.verify(token, challengeSecret()) as { userId: string; purpose?: string };
+  if (payload.purpose !== '2fa') throw new Error('Wrong token purpose');
+  return { userId: payload.userId };
+}
+
 export function verifyAccessToken(token: string): AccessTokenPayload {
   return jwt.verify(token, env.jwtAccessSecret) as AccessTokenPayload;
 }
