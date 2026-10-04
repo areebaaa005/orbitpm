@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { GoogleSignInButton, OrDivider, googleEnabled } from '../components/GoogleSignInButton';
 import { useAuth } from '../context/AuthContext';
 import { useAcceptInvitation } from '../hooks/useWorkspaceData';
 import { AuthLayout } from '../components/AuthLayout';
@@ -7,7 +8,8 @@ import { OrbitMark } from '../components/OrbitMark';
 import { PENDING_INVITE_KEY } from './AcceptInvite';
 
 export default function Login() {
-  const { login, verifyTwoFactor } = useAuth();
+  const { login, loginWithGoogle, verifyTwoFactor } = useAuth();
+  const location = useLocation();
   const acceptInvitation = useAcceptInvitation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -15,7 +17,10 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Set once the password step succeeded for an account with 2FA
-  const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  // (Register can hand over a challenge when Google sign-in lands on an account that has 2FA)
+  const [challengeToken, setChallengeToken] = useState<string | null>(
+    (location.state as { challengeToken?: string } | null)?.challengeToken ?? null
+  );
   const [code, setCode] = useState('');
   const [useRecovery, setUseRecovery] = useState(false);
 
@@ -30,6 +35,17 @@ export default function Login() {
       sessionStorage.removeItem(PENDING_INVITE_KEY);
     }
     navigate('/');
+  }
+
+  async function handleGoogle(credential: string) {
+    setError(null);
+    try {
+      const result = await loginWithGoogle(credential);
+      if (result.challengeToken) setChallengeToken(result.challengeToken);
+      else await finishSignIn();
+    } catch (err: any) {
+      setError(err?.response?.data?.error?.message || 'Google sign-in failed. Please try again.');
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -161,6 +177,13 @@ export default function Login() {
               </div>
             )}
           </form>
+
+          {googleEnabled && !challengeToken && (
+            <>
+              <OrDivider />
+              <GoogleSignInButton onCredential={handleGoogle} />
+            </>
+          )}
         </div>
 
         <p className="mt-6 text-center text-sm text-space-300">

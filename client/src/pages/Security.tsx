@@ -5,6 +5,7 @@ import { AppLayout } from '../components/AppLayout';
 import { toast, getErrorMessage } from '../components/Toast';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { GoogleSignInButton, googleEnabled } from '../components/GoogleSignInButton';
 
 type Step = 'idle' | 'setup' | 'codes' | 'disable';
 
@@ -106,6 +107,18 @@ export default function Security() {
     a.download = 'orbitpm-recovery-codes.txt';
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  const [googleError, setGoogleError] = useState<string | null>(null);
+  async function connectGoogle(credential: string) {
+    setGoogleError(null);
+    try {
+      await api.post('/auth/google/link', { credential });
+      await refreshUser();
+      toast.success('Google account connected');
+    } catch (err) {
+      setGoogleError(getErrorMessage(err, 'Could not connect Google. Please try again.'));
+    }
   }
 
   const errorBox = error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
@@ -220,6 +233,30 @@ export default function Security() {
             </form>
           )}
         </div>
+
+        {googleEnabled && (
+          <div className="card mt-4 p-6">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-space-50">Sign in with Google</h2>
+              <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${user?.googleLinked ? 'bg-emerald-50 text-emerald-700' : 'bg-space-800 text-space-300'}`}>
+                {user?.googleLinked ? 'Connected' : 'Not connected'}
+              </span>
+            </div>
+            {user?.googleLinked ? (
+              <p className="mt-1 text-sm text-space-300">You can use "Continue with Google" on the sign-in page.</p>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-space-300">
+                  Connect a Google account to sign in with one click. Your password keeps working too.
+                </p>
+                <div className="mt-4 max-w-xs">
+                  <GoogleSignInButton onCredential={connectGoogle} text="signin_with" />
+                </div>
+                {googleError && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{googleError}</p>}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

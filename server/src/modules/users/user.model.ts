@@ -9,6 +9,10 @@ export interface IUser extends Document {
   avatar?: string;
   status: 'active' | 'suspended';
   lastSeenAt?: Date;
+  /** Google account id (the stable `sub` claim) once Google sign-in is connected. */
+  googleId?: string;
+  /** false for accounts created through Google: they have no password the user knows. */
+  passwordSet?: boolean;
   twoFactor?: {
     enabled: boolean;
     enabledAt?: Date;
@@ -39,6 +43,8 @@ const userSchema = new Schema<IUser>(
     avatar: { type: String, default: null },
     status: { type: String, enum: ['active', 'suspended'], default: 'active' },
     lastSeenAt: { type: Date, default: Date.now },
+    googleId: { type: String, unique: true, sparse: true },
+    passwordSet: { type: Boolean, default: true },
     // Secrets are select:false: they only load when a query asks for them explicitly.
     twoFactor: {
       enabled: { type: Boolean, default: false },

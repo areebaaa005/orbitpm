@@ -44,6 +44,20 @@ export const login = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+export const googleLogin = catchAsync(async (req: Request, res: Response) => {
+  const result = await authService.loginWithGoogle(req.body.credential, req.headers['user-agent']);
+  if (result.twoFactorRequired) {
+    return res.status(200).json({ success: true, data: { twoFactorRequired: true, challengeToken: result.challengeToken } });
+  }
+  res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, refreshCookieOptions());
+  res.status(200).json({ success: true, data: { user: result.user, accessToken: result.accessToken } });
+});
+
+export const googleLink = catchAsync(async (req: Request, res: Response) => {
+  const user = await authService.linkGoogle(req.userId!, req.body.credential);
+  res.status(200).json({ success: true, data: { user } });
+});
+
 export const twoFactorVerify = catchAsync(async (req: Request, res: Response) => {
   const result = await twoFactorService.verifyLogin(req.body.challengeToken, req.body.code, req.headers['user-agent']);
   res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, refreshCookieOptions());

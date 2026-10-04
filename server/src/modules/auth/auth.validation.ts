@@ -24,6 +24,10 @@ export const updateProfileSchema = z.object({
 
 const codeField = z.string().trim().min(6, 'Enter your code').max(20);
 
+export const googleCredentialSchema = z.object({
+  body: z.object({ credential: z.string().min(20).max(4096) }),
+});
+
 export const twoFactorVerifySchema = z.object({
   body: z.object({ challengeToken: z.string().min(10), code: codeField }),
 });

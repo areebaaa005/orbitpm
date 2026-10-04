@@ -9,6 +9,8 @@ interface AuthContextValue {
   /** Resolves with a challengeToken when the account has 2FA: finish with verifyTwoFactor(). */
   login: (email: string, password: string) => Promise<{ challengeToken?: string }>;
   verifyTwoFactor: (challengeToken: string, code: string) => Promise<void>;
+  /** Same contract as login(): resolves with a challengeToken if the account also has 2FA. */
+  loginWithGoogle: (credential: string) => Promise<{ challengeToken?: string }>;
   /** Re-reads the signed-in user (e.g. after turning 2FA on or off). */
   refreshUser: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
@@ -50,6 +52,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   }
 
+  async function loginWithGoogle(credential: string) {
+    const res = await api.post('/auth/google', { credential });
+    if (res.data.data.twoFactorRequired) {
+      return { challengeToken: res.data.data.challengeToken as string };
+    }
+    setAccessToken(res.data.data.accessToken);
+    setUser(res.data.data.user);
+    connectSocket();
+    return {};
+  }
+
   async function verifyTwoFactor(challengeToken: string, code: string) {
     const res = await api.post('/auth/2fa/verify', { challengeToken, code });
     setAccessToken(res.data.data.accessToken);
@@ -82,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, verifyTwoFactor, refreshUser, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, isLoading, login, loginWithGoogle, verifyTwoFactor, refreshUser, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

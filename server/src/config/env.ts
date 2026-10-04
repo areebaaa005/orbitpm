@@ -20,6 +20,8 @@ interface EnvConfig {
   cloudinaryApiSecret?: string;
   /** 64 hex chars. Encrypts stored 2FA secrets. Falls back to a key derived from JWT_REFRESH_SECRET. */
   twoFactorEncryptionKey?: string;
+  /** OAuth client ID from Google Cloud Console. Google sign-in is disabled when unset. */
+  googleClientId?: string;
 }
 
 function required(key: string): string {
@@ -46,4 +48,5 @@ export const env: EnvConfig = {
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
   twoFactorEncryptionKey: process.env.TWO_FACTOR_ENCRYPTION_KEY,
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
 };

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { User, IUser } from '../users/user.model';
 import { RefreshSession } from './refreshSession.model';
 import { ApiError } from '../../utils/ApiError';
+import { OAuth2Client } from 'google-auth-library';
 import { signAccessToken, signRefreshToken, verifyRefreshToken, signTwoFactorChallenge } from '../../utils/jwt';
 import { env } from '../../config/env';
 import { RegisterInput, LoginInput } from './auth.validation';
@@ -19,6 +20,8 @@ export function sanitizeUser(user: IUser) {
     email: user.email,
     avatar: user.avatar || null,
     twoFactorEnabled: !!user.twoFactor?.enabled,
+    googleLinked: !!user.googleId,
+    hasPassword: user.passwordSet !== false,
   };
 }
 
@@ -77,6 +80,87 @@ export async function loginUser(input: LoginInput, userAgent?: string) {
 
   const tokens = await createSession(user._id.toString(), userAgent);
   return { twoFactorRequired: false as const, user: sanitizeUser(user), ...tokens };
+}
+
+// ---------- Google sign-in ----------
+
+const googleClient = new OAuth2Client();
+
+interface GoogleIdentity {
+  sub: string;
+  email: string;
+  name: string;
+}
+
+/** Checks the signature, expiry, issuer and audience of a Google ID token, and that the email is verified. */
+async function verifyGoogleCredential(credential: string): Promise<GoogleIdentity> {
+  if (!env.googleClientId) {
+    throw new ApiError(503, 'GOOGLE_NOT_CONFIGURED', 'Google sign-in is not set up on this server');
+  }
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: env.googleClientId });
+    payload = ticket.getPayload();
+  } catch {
+    throw ApiError.unauthorized('Google sign-in failed. Please try again.');
+  }
+  if (!payload?.sub || !payload.email) throw ApiError.unauthorized('Google sign-in failed. Please try again.');
+  if (payload.email_verified !== true) throw ApiError.unauthorized('Your Google email address is not verified.');
+  const email = payload.email.toLowerCase();
+  return { sub: payload.sub, email, name: (payload.name || email.split('@')[0]).slice(0, 80) };
+}
+
+/**
+ * Sign in (or sign up) with Google. An existing password account is NOT linked automatically: registration does not
+ * verify email ownership, so linking by email alone would let someone who pre-registered a victim's address keep
+ * access. The owner links Google from the Security page while signed in instead.
+ */
+export async function loginWithGoogle(credential: string, userAgent?: string) {
+  const google = await verifyGoogleCredential(credential);
+
+  let user = await User.findOne({ googleId: google.sub });
+  if (!user) {
+    if (await User.findOne({ email: google.email })) {
+      throw ApiError.conflict(
+        'An account with this email already exists. Sign in with your password, then connect Google in Security settings.'
+      );
+    }
+    user = await User.create({
+      name: google.name,
+      email: google.email,
+      googleId: google.sub,
+      passwordSet: false,
+      // Unusable on purpose: the account signs in with Google, so nobody knows this password.
+      passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), SALT_ROUNDS),
+    });
+  }
+
+  if (user.status === 'suspended') throw ApiError.forbidden('This account has been suspended');
+
+  // Google proves who they are, but our own second factor still applies if the user turned it on
+  if (user.twoFactor?.enabled) {
+    return { twoFactorRequired: true as const, challengeToken: signTwoFactorChallenge(user._id.toString()) };
+  }
+
+  user.lastSeenAt = new Date();
+  await user.save();
+  const tokens = await createSession(user._id.toString(), userAgent);
+  return { twoFactorRequired: false as const, user: sanitizeUser(user), ...tokens };
+}
+
+/** Connect a Google account to the signed-in user (lets a password account use 'Continue with Google'). */
+export async function linkGoogle(userId: string, credential: string) {
+  const google = await verifyGoogleCredential(credential);
+  const user = await User.findById(userId);
+  if (!user) throw ApiError.notFound('User not found');
+  if (user.googleId) throw ApiError.conflict('A Google account is already connected');
+
+  const taken = await User.findOne({ googleId: google.sub });
+  if (taken) throw ApiError.conflict('That Google account is already connected to another user');
+
+  user.googleId = google.sub;
+  await user.save();
+  return sanitizeUser(user);
 }
 
 export async function refreshSession(refreshToken: string) {

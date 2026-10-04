@@ -150,7 +150,10 @@ export async function disable(userId: string, password: string, code: string) {
   if (!user.twoFactor?.enabled) throw ApiError.badRequest('NOT_ENABLED', 'Two-factor authentication is not enabled');
   assertNotLocked(user);
 
-  if (!(await user.comparePassword(password))) throw ApiError.unauthorized('Incorrect password');
+  // Accounts created through Google have no password the user knows: the code alone confirms it is them
+  if (user.passwordSet !== false && !(await user.comparePassword(password))) {
+    throw ApiError.unauthorized('Incorrect password');
+  }
   if (!(await checkSecondFactor(user, code))) {
     await registerFailure(userId);
     throw ApiError.unauthorized('Invalid code');
